@@ -16,7 +16,7 @@ export default function ShippingPage() {
       <section className="mt-10 space-y-4 text-ink/75">
         <h2 className="font-display text-2xl text-ink">Shipping</h2>
         <p>
-          Free shipping on U.S. orders over $30. Orders under $30 ship for a
+          Free shipping on U.S. orders over $40. Orders under $40 ship for a
           flat $4.95. We typically dispatch within 24 hours when items are in
           stock. Most deliveries arrive in 5–8 business days depending on
           destination and carrier.

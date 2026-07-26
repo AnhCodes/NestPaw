@@ -38,7 +38,7 @@ export default async function ShopPage({
           </h1>
           <p className="mt-4 text-base text-ink-soft md:text-lg">
             Calm enrichment and groom tools that keep home life easier — free
-            shipping over $30.
+            shipping over $40.
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">

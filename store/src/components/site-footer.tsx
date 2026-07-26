@@ -46,7 +46,7 @@ export function SiteFooter() {
             <Link href="/shipping" className="transition hover:text-mist">
               30-day returns
             </Link>
-            <p className="pt-4 text-mist/45">Free shipping on orders over $30</p>
+            <p className="pt-4 text-mist/45">Free shipping on orders over $40</p>
           </div>
         </div>
       </div>

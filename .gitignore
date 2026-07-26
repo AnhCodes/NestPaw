@@ -5,3 +5,5 @@
 !.env.example
 *.pem
 .vercel
+__pycache__/
+*.pyc

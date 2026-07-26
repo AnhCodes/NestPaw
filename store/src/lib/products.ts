@@ -85,7 +85,7 @@ export const products: Product[] = [
     tagline: "Dinner that lasts longer than four seconds.",
     description:
       "A food-grade silicone feeding mat with a built-in slow bowl and lick zones. Slows inhale-speed eaters, contains spills, and turns mealtime into calm enrichment.",
-    price: 33,
+    price: 34,
     stock: 0,
     category: "calm",
     image: "/products/nestpaw-slow-feeder-mat-fill.png",
@@ -131,8 +131,8 @@ export const products: Product[] = [
     tagline: "Snuffle mat + lick mat for wind-down nights.",
     description:
       "Our favorite rainy-night pairing: the Forage Snuffle Mat with a suction lick mat for slower, quieter evening routines. Better value than buying each alone.",
-    price: 35,
-    compareAt: 44,
+    price: 38,
+    compareAt: 46,
     stock: 0,
     category: "bundle",
     image: "/products/nestpaw-calm-evening-bundle-fill.png",
@@ -147,7 +147,7 @@ export const products: Product[] = [
       "Built for indoor wind-down energy",
     ],
     includes: ["Forage Snuffle Mat", "Suction lick mat", "Evening routine card"],
-    shippingNote: "Free shipping on this bundle · typically arrives in 5–8 business days",
+    shippingNote: "Ships within 24 hours · free shipping on orders over $40",
     featured: true,
     badge: "Best value",
   },
@@ -180,5 +180,5 @@ export function formatStock(product: Product) {
   return `${product.stock} in stock`;
 }
 
-export const FREE_SHIPPING_THRESHOLD = 30;
+export const FREE_SHIPPING_THRESHOLD = 40;
 export const FLAT_SHIPPING = 4.95;

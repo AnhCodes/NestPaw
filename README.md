@@ -38,7 +38,7 @@ Dropshipping Business/
 | Payments | Stripe Checkout |
 | Supply | CJ samples/wholesale → Alibaba bulk for winners |
 | Fulfillment | Self-ship or 3PL (not Zendrop) |
-| Price band | Mostly $24–$35 (floor at ≥$12 contribution) |
+| Price band | Mostly $24–$38 · free ship over $40 |
 | Catalog | **Core 4** — brush kit, snuffle (+ Calm Evening bundle), slow feeder, nail grinder |
 
 ---

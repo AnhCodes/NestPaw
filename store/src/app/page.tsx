@@ -7,7 +7,7 @@ const featured = products.filter((p) => p.featured);
 const heroFeature = featured[0];
 const sideFeatures = featured.slice(1, 3);
 const marqueeItems = [
-  "Free shipping over $30",
+  "Free shipping over $40",
   "Ships within 24 hours",
   "30-day returns",
   "Calm · Groom · Enrichment",
@@ -149,7 +149,7 @@ export default function HomePage() {
               Practical calm, not pet-store noise
             </h2>
             <p className="mt-5 text-base leading-relaxed text-ink-soft md:text-lg">
-              Free shipping over $30. Honest delivery windows. A 30-day return
+              Free shipping over $40. Honest delivery windows. A 30-day return
               window on unused or defective items. No medical claims — just tools
               that make home life with your dog feel smoother.
             </p>

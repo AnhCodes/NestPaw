@@ -32,91 +32,161 @@ BG = HexColor("#f4f7f5")
 BG_CARD = HexColor("#fafbfa")
 ACCENT = HexColor("#246048")
 
+# Landed = cost to NestPaw (Alibaba + inbound). Outbound = est. US ship to customer.
+# Free ship on NestPaw orders ≥ $40; customer pays $4.95 under. Solo-item orders.
+FREE_SHIP_AT = 40.0
+CUSTOMER_SHIP_FEE = 4.95
+STRIPE_PCT = 0.029
+STRIPE_FIXED = 0.30
+RETURNS_PCT = 0.03
+
+# Shedding Brush Kit components
+# MHC gloves: Alibaba selling unit / MOQ band is a pack of 50 @ $0.56/pc (50–99 tier).
+# Per NestPaw kit we only use 1 glove → amortize pack across 50 kits.
+COMB_UNIT = 0.55  # Kinghon mid of $0.45–$0.60
+GLOVE_UNIT = 0.56  # MHC $0.56 at 50–99 pcs
+GLOVE_PACK_QTY = 50
+GLOVE_PACK_COST = round(GLOVE_UNIT * GLOVE_PACK_QTY, 2)  # $28.00 cash for one pack
+BRUSH_KIT_ALIBABA = round(COMB_UNIT + GLOVE_UNIT, 2)  # $1.11 per kit sold
+BRUSH_KIT_INBOUND = 3.00  # est. China→NestPaw freight pad (planning)
+BRUSH_KIT_LANDED = round(BRUSH_KIT_ALIBABA + BRUSH_KIT_INBOUND, 2)  # $4.11
+
 STORE = [
-    ("Shedding Brush Kit", "$24", "$7.00", "$10.00", "$12.28", "Kinghon comb + MHC glove"),
-    ("Forage Snuffle Mat", "$28", "$8.00", "$14.00", "$12.05", "Snuffle listing"),
-    ("Silicone Slow Feeder Mat", "$33", "$11.21", "$18.00", "$12.75", "Slow-feeder listing"),
-    ("Quiet Nail Grinder", "$25", "$5.69", "$11.00", "$12.22", "Nail-grinder listing"),
-    ("Calm Evening Bundle", "$35", "$12.00*", "$20.00", "$12.63", "Snuffle + lick (2 orders)"),
+    {
+        "product": "Shedding Brush Kit",
+        "sell": 24.0,
+        "alibaba": BRUSH_KIT_ALIBABA,
+        "alibaba_label": f"${BRUSH_KIT_ALIBABA:.2f}†",
+        "landed": BRUSH_KIT_LANDED,  # to NestPaw
+        "outbound": 5.50,  # est. USPS to customer
+        "source": "Kinghon comb + 1 MHC glove",
+    },
+    {
+        "product": "Forage Snuffle Mat",
+        "sell": 28.0,
+        "alibaba": 8.0,
+        "alibaba_label": "$8.00",
+        "landed": 14.0,
+        "outbound": 7.00,
+        "source": "Snuffle listing",
+    },
+    {
+        "product": "Silicone Slow Feeder Mat",
+        "sell": 34.0,
+        "alibaba": 11.21,
+        "alibaba_label": "$11.21",
+        "landed": 18.0,
+        "outbound": 6.50,
+        "source": "Slow-feeder listing",
+    },
+    {
+        "product": "Quiet Nail Grinder",
+        "sell": 25.0,
+        "alibaba": 5.69,
+        "alibaba_label": "$5.69",
+        "landed": 11.0,
+        "outbound": 5.50,
+        "source": "Nail-grinder listing",
+    },
+    {
+        "product": "Calm Evening Bundle",
+        "sell": 38.0,
+        "alibaba": 12.0,
+        "alibaba_label": "$12.00*",
+        "landed": 20.0,
+        "outbound": 8.00,
+        "source": "Snuffle + lick (2 orders)",
+    },
 ]
 
-# One row per Alibaba SKU to buy
+
+def money(n: float) -> str:
+    return f"${n:.2f}"
+
+
+def contribution(item: dict) -> float:
+    """What NestPaw keeps on a solo-item order after outbound to customer."""
+    ship_collected = 0.0 if item["sell"] >= FREE_SHIP_AT else CUSTOMER_SHIP_FEE
+    charged = item["sell"] + ship_collected
+    stripe = charged * STRIPE_PCT + STRIPE_FIXED
+    returns = item["sell"] * RETURNS_PCT
+    return charged - item["landed"] - item["outbound"] - stripe - returns
+
+
+# One row per Alibaba SKU to buy (individual items — not NestPaw kits/bundles)
 ORDERS = [
     {
         "n": "01",
-        "use": "Shedding Brush Kit",
-        "sell": "$24",
-        "tag": "Part 1 of 2",
+        "name": "Hair Remove Comb",
+        "tag": f"{money(COMB_UNIT)} / piece · used in Shedding Brush Kit",
         "listing": "Dog and Cat One-button Hair Remove Comb",
         "producer": "Yiwu Kinghon Pet Products Co. Ltd.",
         "badge": "Verified · 8 yrs",
-        "cost": "$7.00",
-        "cost_note": "kit total (comb + glove)",
-        "stats": "1,840 sold · 4.8/5 (573) · #11 Pet Cleaning",
+        "cost": money(COMB_UNIT),
+        "cost_note": "per piece",
+        "stats": "1,840 sold · 4.8/5 (573) · #11 Pet Cleaning · MOQ ~50",
         "url": "https://www.alibaba.com/product-detail/Dog-and-Cat-One-button-Hair_1601126914170.html",
     },
     {
         "n": "02",
-        "use": "Shedding Brush Kit",
-        "sell": "$24",
-        "tag": "Part 2 of 2",
+        "name": "Silicone Grooming Gloves",
+        "tag": (
+            f"{money(GLOVE_PACK_COST)} / pack of {GLOVE_PACK_QTY} "
+            f"({money(GLOVE_UNIT)}/pc) · used in Shedding Brush Kit"
+        ),
         "listing": "MHC Customizable Size Silicone Grooming Gloves",
-        "producer": "MHC",
-        "badge": "Kit component",
-        "cost": "—",
-        "cost_note": "included in kit $7",
-        "stats": "Order together with the Kinghon comb",
+        "producer": "Dongguan MHC Industrial Co. Ltd.",
+        "badge": f"1 unit = pack of {GLOVE_PACK_QTY}",
+        "cost": money(GLOVE_PACK_COST),
+        "cost_note": f"pack of {GLOVE_PACK_QTY} pcs",
+        "stats": f"50–99 tier @ {money(GLOVE_UNIT)}/pc · one pack covers {GLOVE_PACK_QTY} kits",
         "url": "https://www.alibaba.com/product-detail/MHC-Customizable-Size-Silicone-Grooming-Gloves_1601358986188.html",
     },
     {
         "n": "03",
-        "use": "Forage Snuffle Mat",
-        "sell": "$28",
-        "tag": "Also in Calm Evening",
+        "name": "Forage Snuffle Mat",
+        "tag": "$8.00 / piece · NestPaw $28 · also in Calm Evening Bundle",
         "listing": "LS OEM Waterproof Interactive Dog Foraging Mat",
         "producer": "Weihai L.S. / PEPPY BUDDIES",
         "badge": "Custom Mfr · 5 yrs",
         "cost": "$8.00",
-        "cost_note": "wholesale anchor",
+        "cost_note": "per piece",
         "stats": "5.0/5 (128) · MOQ ~90–180",
         "url": "https://www.alibaba.com/product-detail/LS-OEM-Waterproof-Interactive-Dog-Foraging_1600772908467.html",
     },
     {
         "n": "04",
-        "use": "Silicone Slow Feeder Mat",
-        "sell": "$33",
-        "tag": "",
+        "name": "Silicone Slow-Feeder Mat",
+        "tag": "$11.21 / piece · NestPaw $34",
         "listing": "OEM/ODM Food-Grade Eco Silicone Slow-Feeder Mat",
         "producer": "Xiamen Hands Chain Silicone Co. Ltd.",
         "badge": "Custom Mfr · 10 yrs",
         "cost": "$11.21",
-        "cost_note": "wholesale anchor",
+        "cost_note": "per piece",
         "stats": "4.9/5 (148) · silicone mat (not plastic maze)",
         "url": "https://www.alibaba.com/product-detail/OEM-ODM-Wholesale-Food-Grade-Eco_1601762944691.html",
     },
     {
         "n": "05",
-        "use": "Quiet Nail Grinder",
-        "sell": "$25",
-        "tag": "",
+        "name": "Pet Nail Trimmer / Grinder",
+        "tag": "$5.69 / piece · NestPaw Quiet Nail Grinder $25",
         "listing": "2-in-1 Pet Nail Trimmer / Grinder (USB · LED)",
         "producer": "Shaanxi Green Bird Supply Chain Co. LTD.",
         "badge": "Multispecialty · 1 yr",
         "cost": "$5.69",
-        "cost_note": "wholesale anchor",
+        "cost_note": "per piece",
         "stats": "4.9/5 (17) · MOQ from 1 · QC samples",
         "url": "https://www.alibaba.com/product-detail/2-in-1-Pet-Nail-Trimmer_1601712074583.html",
     },
     {
         "n": "06",
-        "use": "Calm Evening Bundle",
-        "sell": "$35",
-        "tag": "Lick mat only · not sold alone",
+        "name": "Silicone Lick Mat",
+        "tag": "$3.50 / piece · used in Calm Evening Bundle (not sold alone)",
         "listing": "Custom Dog Lick Mat Silicone Pet Feeding Mat",
         "producer": "Guangdong Yumingsheng Precision Mfg Co. Ltd.",
         "badge": "Custom Mfr · 2 yrs",
         "cost": "$3.50",
-        "cost_note": "bundle component",
+        "cost_note": "per piece",
         "stats": "4,617 sold · 4.7/5 (99) · #1 Pet Bowls",
         "url": "https://www.alibaba.com/product-detail/Custom-Dog-Lick-Mat-Silicone-Pet_1601392779056.html",
     },
@@ -339,18 +409,28 @@ def footer(canvas, doc):
 def storefront_table(styles):
     header = [
         Paragraph(h, styles["Th"])
-        for h in ["Product", "Sell", "Alibaba", "Landed", "Contrib.", "How to source"]
+        for h in [
+            "Product",
+            "Sell",
+            "Alibaba",
+            "To us",
+            "Ship→cust",
+            "Keep",
+            "How to source",
+        ]
     ]
     rows = [header]
-    for product, sell, cost, landed, contrib, source in STORE:
+    for item in STORE:
+        keep = contribution(item)
         rows.append(
             [
-                Paragraph(product, styles["TdB"]),
-                Paragraph(sell, styles["Td"]),
-                Paragraph(cost, styles["Td"]),
-                Paragraph(landed, styles["Td"]),
-                Paragraph(contrib, styles["Td"]),
-                Paragraph(source, styles["Td"]),
+                Paragraph(item["product"], styles["TdB"]),
+                Paragraph(money(item["sell"]).replace(".00", ""), styles["Td"]),
+                Paragraph(item["alibaba_label"], styles["Td"]),
+                Paragraph(money(item["landed"]), styles["Td"]),
+                Paragraph(money(item["outbound"]), styles["Td"]),
+                Paragraph(money(keep), styles["TdB"]),
+                Paragraph(item["source"], styles["Td"]),
             ]
         )
 
@@ -358,11 +438,12 @@ def storefront_table(styles):
     table = Table(
         rows,
         colWidths=[
-            2.15 * inch,
+            1.85 * inch,
+            0.55 * inch,
+            0.7 * inch,
             0.65 * inch,
-            0.8 * inch,
             0.75 * inch,
-            0.8 * inch,
+            0.65 * inch,
             2.15 * inch,
         ],
         hAlign="LEFT",
@@ -378,11 +459,11 @@ def storefront_table(styles):
                 ("LINEBELOW", (0, -1), (-1, -1), 0.4, LINE),
                 ("BOX", (0, 0), (-1, -1), 0.6, RULE),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 7),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
                 ("TOPPADDING", (0, 0), (-1, -1), 6),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("ALIGN", (1, 1), (4, -1), "RIGHT"),
+                ("ALIGN", (1, 1), (5, -1), "RIGHT"),
             ]
         )
     )
@@ -396,11 +477,10 @@ def order_card(item, styles):
     pad = 8  # points — applied only on the outer card
     inner_w = card_w - (2 * pad)
 
-    use_line = f'{item["use"]}  ·  {item["sell"]}'
     tag = item["tag"]
 
-    # Title row: number + product (+ optional tag badge under title)
-    title_bits = [Paragraph(use_line, styles["CardUse"])]
+    # Title row: number + item name (+ price / usage note under title)
+    title_bits = [Paragraph(item["name"], styles["CardUse"])]
     if tag:
         title_bits.append(Paragraph(tag, styles["CardTag"]))
 
@@ -516,16 +596,23 @@ def main():
     story.append(Paragraph("1 · NestPaw storefront", styles["H"]))
     story.append(
         Paragraph(
-            "Retail prices, estimated landed cost, and contribution after Stripe + returns reserve.",
+            "Retail prices, cost to NestPaw, estimated outbound to customer, and what we keep "
+            "after Stripe + returns (solo-item orders).",
             styles["Intro"],
         )
     )
     story.append(storefront_table(styles))
     story.append(
         Paragraph(
-            "*Calm Evening cost = snuffle $8 + lick $3.50. Landed includes outbound ship. "
-            "Contrib. = sell − landed − Stripe (2.9% + $0.30) − 3% returns. "
-            "Confirm live Alibaba quotes before bulk.",
+            "*Calm Evening Alibaba = snuffle $8 + lick $3.50. "
+            f"†Brush kit Alibaba = comb {money(COMB_UNIT)} + 1 glove {money(GLOVE_UNIT)} "
+            f"(MHC unit = pack of {GLOVE_PACK_QTY} for {money(GLOVE_PACK_COST)} cash → "
+            f"{money(GLOVE_UNIT)}/kit). "
+            "To us = cost at NestPaw (Alibaba + inbound). "
+            "Ship→cust = est. US outbound (self-ship). "
+            "Keep = (sell + ship fee) − to us − outbound − Stripe (2.9% + $0.30) − 3% returns. "
+            f"Ship fee = $0 if sell ≥ ${FREE_SHIP_AT:.0f}, else ${CUSTOMER_SHIP_FEE:.2f}. "
+            "Confirm live Alibaba + carrier quotes before bulk.",
             styles["Footnote"],
         )
     )
@@ -535,8 +622,9 @@ def main():
     story.append(Paragraph("2 · Alibaba order list", styles["H"]))
     story.append(
         Paragraph(
-            "One card per Alibaba SKU to buy. Brush kit = two orders. "
-            "Calm Evening = snuffle (#03) + lick (#06) — no bundle SKU on Alibaba.",
+            "One card per Alibaba item to buy — unit price shown on each card. "
+            "Shedding Brush Kit needs #01 comb + #02 glove pack. "
+            "Calm Evening Bundle needs #03 snuffle + #06 lick mat.",
             styles["Intro"],
         )
     )
@@ -548,8 +636,10 @@ def main():
     story.append(HRFlowable(width="100%", thickness=0.6, color=LINE, spaceAfter=6))
     story.append(
         Paragraph(
-            "Free shipping on NestPaw orders over $30 ($4.95 under). "
-            "Alibaba costs are verified wholesale anchors, not always the public list price.",
+            f"Free shipping on NestPaw orders over ${FREE_SHIP_AT:.0f} "
+            f"(${CUSTOMER_SHIP_FEE:.2f} under). "
+            "Alibaba costs are verified wholesale anchors, not always the public list price. "
+            "Outbound estimates are planning figures — replace with real USPS/UPS quotes.",
             styles["Footnote"],
         )
     )
