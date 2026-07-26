@@ -12,6 +12,7 @@ Working brand: **NestPaw** — calm · comfort · groom accessories for dogs at 
 ```
 Dropshipping Business/
 ├── README.md
+├── TODO.md                           # Active to-do list
 ├── business/
 │   ├── nestpaw-product-catalog.pdf   # Sell prices, Alibaba costs, suppliers, links
 │   └── generate-catalog.py           # Regenerate the PDF (python3 generate-catalog.py)
@@ -23,7 +24,8 @@ Dropshipping Business/
 ## Start here
 
 1. **[Product & sourcing catalog (PDF)](business/nestpaw-product-catalog.pdf)** — what we sell, NestPaw prices, Alibaba costs, producers, and links  
-2. **[store/](store/)** — NestPaw website (`cd store && npm run dev`)
+2. **[store/](store/)** — NestPaw website (`cd store && npm run dev`)  
+3. **[TODO.md](TODO.md)** — active to-do list
 
 ---
 
@@ -42,6 +44,8 @@ Dropshipping Business/
 ---
 
 ## Next actions
+
+See **[TODO.md](TODO.md)** for the live checklist. Baseline launch steps:
 
 1. Order samples via Alibaba/CJ using [nestpaw-product-catalog.pdf](business/nestpaw-product-catalog.pdf).  
 2. Add Stripe keys to `store/.env.local`.  
