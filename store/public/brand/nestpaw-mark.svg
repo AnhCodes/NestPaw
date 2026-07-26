@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
+  <path fill-rule="evenodd" d="M32 6c14.4 0 26 11.2 26 28 0 13.2-9.2 24-26 24S6 47.2 6 34C6 17.2 17.6 6 32 6Zm0 8C21.5 14 14 22.2 14 34c0 9.4 6.2 16 18 16s18-6.6 18-16C50 22.2 42.5 14 32 14Z"/>
+  <ellipse cx="32" cy="38" rx="8" ry="7"/>
+  <circle cx="20.5" cy="28" r="4"/>
+  <circle cx="27.5" cy="24.5" r="4.2"/>
+  <circle cx="36.5" cy="24.5" r="4.2"/>
+  <circle cx="43.5" cy="28" r="4"/>
+</svg>
