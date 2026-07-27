@@ -5,14 +5,16 @@ import {
   getProductsByCategory,
   type Category,
 } from "@/lib/products";
+import { createPageMetadata } from "@/lib/seo";
 
 type SearchParams = Promise<{ category?: string }>;
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: "Shop",
   description:
-    "Shop NestPaw Core 4 — calm enrichment and groom essentials for dogs at home.",
-};
+    "Shop NestPaw calm enrichment and grooming essentials for dogs at home. Free shipping over $40.",
+  path: "/shop",
+});
 
 export default async function ShopPage({
   searchParams,
@@ -38,7 +40,7 @@ export default async function ShopPage({
           </h1>
           <p className="mt-4 text-base text-ink-soft md:text-lg">
             Calm enrichment and groom tools that keep home life easier — free
-            shipping over $40.
+            shipping over&nbsp;$40.
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">

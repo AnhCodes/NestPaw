@@ -10,7 +10,7 @@ const marqueeItems = [
   "Free shipping over $40",
   "Ships within 24 hours",
   "30-day returns",
-  "Calm · Groom · Enrichment",
+  "Calm\u00a0·\u00a0Groom\u00a0·\u00a0Enrichment",
   "U.S. delivery 5–8 days",
   "No medical claims — just better home routines",
 ];
@@ -32,24 +32,14 @@ export default function HomePage() {
           <p className="animate-fade font-display text-[clamp(3.5rem,12vw,8.5rem)] font-bold leading-[0.9] text-mist">
             NestPaw
           </p>
-          <div className="mt-8 flex max-w-3xl flex-col gap-6 md:mt-10 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h1 className="animate-rise delay-1 max-w-xl font-display text-3xl font-semibold leading-[1.05] text-mist md:text-4xl lg:text-5xl">
-                Calm comfort for dogs at home
-              </h1>
-              <p className="animate-rise delay-2 mt-4 max-w-md text-base leading-relaxed text-mist/80 md:text-lg">
-                Products that help your dog feel settled — and make everyday home
-                life easier for you.
-              </p>
-            </div>
-            <div className="animate-rise delay-3 flex flex-wrap gap-3">
-              <Link href="/shop" className="btn-light">
-                Shop collection
-              </Link>
-              <Link href="/products/calm-evening-bundle" className="btn-ghost">
-                Calm Evening
-              </Link>
-            </div>
+          <div className="mt-8 max-w-3xl md:mt-10">
+            <h1 className="animate-rise delay-1 max-w-xl font-display text-3xl font-semibold leading-[1.05] text-mist md:text-4xl lg:text-5xl">
+              Calm comfort for dogs at home
+            </h1>
+            <p className="animate-rise delay-2 mt-4 max-w-md text-base leading-relaxed text-mist/80 md:text-lg">
+              Products that help your dog feel settled — and make everyday home
+              life easier for you.
+            </p>
           </div>
         </div>
       </section>
@@ -101,17 +91,11 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid items-stretch gap-4 md:grid-cols-12 md:gap-4">
-          {heroFeature ? (
-            <div className="md:col-span-7 md:min-h-[36rem]">
-              <ProductCard product={heroFeature} large className="h-full" />
-            </div>
-          ) : null}
-          <div className="grid grid-rows-2 gap-4 md:col-span-5 md:min-h-[36rem]">
-            {sideFeatures.map((product) => (
-              <ProductCard key={product.id} product={product} fill />
-            ))}
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {heroFeature ? <ProductCard product={heroFeature} /> : null}
+          {sideFeatures.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -149,7 +133,7 @@ export default function HomePage() {
               Practical calm, not pet-store noise
             </h2>
             <p className="mt-5 text-base leading-relaxed text-ink-soft md:text-lg">
-              Free shipping over $40. Honest delivery windows. A 30-day return
+              Free shipping over&nbsp;$40. Honest delivery windows. A 30-day return
               window on unused or defective items. No medical claims — just tools
               that make home life with your dog feel smoother.
             </p>

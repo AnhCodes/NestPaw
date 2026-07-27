@@ -1,16 +1,12 @@
 import Stripe from "stripe";
+import { getSiteUrl } from "@/lib/site";
+
+export { getSiteUrl };
 
 export function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return null;
   return new Stripe(key);
-}
-
-export function getSiteUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
 }
 
 export function randomCheckoutSuffix(length = 8) {

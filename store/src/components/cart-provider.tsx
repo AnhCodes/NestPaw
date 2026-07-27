@@ -29,6 +29,7 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "nestpaw-cart-v1";
+const EMPTY_CART: CartItem[] = [];
 
 let memoryCart: CartItem[] | null = null;
 const listeners = new Set<() => void>();
@@ -48,15 +49,15 @@ function readCart(): CartItem[] {
   if (memoryCart) return memoryCart;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    memoryCart = raw ? (JSON.parse(raw) as CartItem[]) : [];
+    memoryCart = raw ? (JSON.parse(raw) as CartItem[]) : EMPTY_CART;
   } catch {
-    memoryCart = [];
+    memoryCart = EMPTY_CART;
   }
   return memoryCart;
 }
 
 function writeCart(items: CartItem[]) {
-  memoryCart = items;
+  memoryCart = items.length === 0 ? EMPTY_CART : items;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch {
@@ -66,7 +67,7 @@ function writeCart(items: CartItem[]) {
 }
 
 function getServerSnapshot(): CartItem[] {
-  return [];
+  return EMPTY_CART;
 }
 
 function subscribeHydration() {

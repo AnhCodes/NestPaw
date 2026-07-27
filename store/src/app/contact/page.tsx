@@ -4,10 +4,43 @@ import { FormEvent, useState } from "react";
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSent(true);
+    setError(null);
+    setLoading(true);
+
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("name"),
+          email: data.get("email"),
+          message: data.get("message"),
+          company: data.get("company"),
+        }),
+      });
+
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+
+      if (!res.ok || !json.ok) {
+        setError(json.error || "Unable to send your message. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      setSent(true);
+      form.reset();
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (
@@ -23,8 +56,8 @@ export default function ContactPage() {
 
       {sent ? (
         <p className="mt-10 border border-moss/15 bg-stone/70 p-6 text-ink/80">
-          Thanks — your message is noted. (Demo form: connect email or a helpdesk
-          when you go live.)
+          Thanks — your message was sent. We&apos;ll reply to the email you
+          provided within one business day.
         </p>
       ) : (
         <form onSubmit={onSubmit} className="mt-10 space-y-4">
@@ -48,11 +81,27 @@ export default function ContactPage() {
             rows={6}
             className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
           />
+          <input
+            type="text"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+            className="hidden"
+            aria-hidden
+          />
+
+          {error ? (
+            <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              {error}
+            </p>
+          ) : null}
+
           <button
             type="submit"
-            className="bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+            disabled={loading}
+            className="bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Send message
+            {loading ? "Sending…" : "Send message"}
           </button>
         </form>
       )}

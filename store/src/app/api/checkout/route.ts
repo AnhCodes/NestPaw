@@ -15,6 +15,20 @@ type CartLine = {
   quantity: number;
 };
 
+/** Stripe requires absolute http(s) image URLs; skip local-only paths. */
+function toAbsoluteImageUrl(image: string, siteUrl: string): string | null {
+  if (/^https?:\/\//i.test(image)) return image;
+  if (!image.startsWith("/")) return null;
+  try {
+    const absolute = new URL(image, `${siteUrl}/`).toString();
+    const host = new URL(absolute).hostname;
+    if (host === "localhost" || host === "127.0.0.1") return null;
+    return absolute;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
   const stripe = getStripe();
   if (!stripe) {
@@ -44,11 +58,17 @@ export async function POST(request: Request) {
     price_data: {
       currency: string;
       unit_amount: number;
-      product_data: { name: string; description?: string; images?: string[] };
+      product_data: {
+        name: string;
+        description?: string;
+        images?: string[];
+        metadata?: Record<string, string>;
+      };
     };
   }[] = [];
 
   let subtotal = 0;
+  const siteUrl = getSiteUrl();
 
   for (const item of items) {
     const product = products.find((p) => p.id === item.productId);
@@ -74,6 +94,7 @@ export async function POST(request: Request) {
     }
 
     subtotal += product.price * item.quantity;
+    const imageUrl = toAbsoluteImageUrl(product.image, siteUrl);
     lineItems.push({
       quantity: item.quantity,
       price_data: {
@@ -82,7 +103,9 @@ export async function POST(request: Request) {
         product_data: {
           name: product.name,
           description: product.tagline,
-          images: [product.image],
+          ...(imageUrl ? { images: [imageUrl] } : {}),
+          // Used by the webhook to map Stripe line items back to your catalog.
+          metadata: { productId: product.id },
         },
       },
     });
@@ -100,12 +123,11 @@ export async function POST(request: Request) {
         product_data: {
           name: "Shipping",
           description: `Flat rate under $${FREE_SHIPPING_THRESHOLD}`,
+          metadata: { productId: "shipping" },
         },
       },
     });
   }
-
-  const siteUrl = getSiteUrl();
 
   try {
     const session = await stripe.checkout.sessions.create({

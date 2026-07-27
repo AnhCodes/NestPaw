@@ -1,5 +1,5 @@
-/** Core 4 launch catalog (+ Calm Evening bundle listing). */
-export type Category = "calm" | "groom" | "bundle";
+/** Launch catalog of calm and groom essentials for dogs at home. */
+export type Category = "calm" | "groom";
 
 export type Product = {
   id: string;
@@ -25,7 +25,6 @@ export const categories: { id: Category | "all"; label: string }[] = [
   { id: "all", label: "All" },
   { id: "calm", label: "Calm" },
   { id: "groom", label: "Groom" },
-  { id: "bundle", label: "Bundles" },
 ];
 
 export const products: Product[] = [
@@ -125,31 +124,27 @@ export const products: Product[] = [
     featured: true,
   },
   {
-    id: "calm-evening",
-    slug: "calm-evening-bundle",
-    name: "Calm Evening Bundle",
-    tagline: "Snuffle mat + lick mat for wind-down nights.",
+    id: "lick-mat",
+    slug: "suction-lick-mat",
+    name: "Suction Lick Mat",
+    tagline: "A simple wind-down ritual for slower, quieter evenings.",
     description:
-      "Our favorite rainy-night pairing: the Forage Snuffle Mat with a suction lick mat for slower, quieter evening routines. Better value than buying each alone.",
-    price: 38,
-    compareAt: 46,
+      "A food-grade silicone lick mat with suction backing for spreadable treats, bath-time distractions, and calmer at-home routines. Easy to rinse, easy to repeat.",
+    price: 14,
     stock: 0,
-    category: "bundle",
-    image: "/products/nestpaw-calm-evening-bundle-fill.png",
+    category: "calm",
+    image: "/products/nestpaw-lick-mat-fill.png",
     gallery: [
-      "/products/nestpaw-calm-evening-bundle-fill.png",
-      "/products/nestpaw-forage-snuffle-mat-gallery-v2.png",
+      "/products/nestpaw-lick-mat-fill.png",
       "/products/nestpaw-lick-mat-gallery-v2.png",
     ],
     benefits: [
-      "Two enrichment tools, one calm evening ritual",
-      "Saves versus buying separately",
-      "Built for indoor wind-down energy",
+      "Turns spreadable treats into a longer-lasting calm activity",
+      "Suction backing helps keep the mat in place on smooth surfaces",
+      "Useful for grooming, bath time, or crate wind-downs",
     ],
-    includes: ["Forage Snuffle Mat", "Suction lick mat", "Evening routine card"],
-    shippingNote: "Ships within 24 hours · free shipping on orders over $40",
-    featured: true,
-    badge: "Best value",
+    includes: ["Suction lick mat", "Care guide"],
+    shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
   },
 ];
 

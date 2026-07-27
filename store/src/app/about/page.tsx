@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Our story",
-};
+  description:
+    "NestPaw makes intentional calm, enrichment, and grooming tools for dogs at home — fewer gimmicks, better routines.",
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

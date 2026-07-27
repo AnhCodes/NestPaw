@@ -8,7 +8,6 @@ import { NestPawLogo } from "@/components/nestpaw-logo";
 
 const links = [
   { href: "/shop", label: "Shop" },
-  { href: "/shop?category=bundle", label: "Bundles" },
   { href: "/about", label: "Story" },
   { href: "/shipping", label: "Shipping" },
   { href: "/contact", label: "Contact" },

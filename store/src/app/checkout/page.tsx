@@ -81,11 +81,6 @@ export default function CheckoutPage() {
       <h1 className="font-display text-4xl font-semibold text-ink md:text-6xl">
         Checkout
       </h1>
-      <p className="mt-3 max-w-xl text-ink-soft">
-        Secure payment via Stripe. After you pay, we fulfill from NestPaw
-        wholesale inventory (CJ / Alibaba).
-      </p>
-
       {!allInStock ? (
         <p className="mt-6 border border-line bg-stone px-4 py-3 text-sm text-ink/70">
           One or more items are out of stock. Remove them from your cart before
@@ -104,15 +99,10 @@ export default function CheckoutPage() {
               name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email (optional — also collected by Stripe)"
+              placeholder="Email (optional)"
               className="w-full border border-line bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-accent/30"
             />
           </fieldset>
-
-          <p className="text-sm text-ink-soft">
-            Shipping address is collected securely on the Stripe Checkout page
-            (U.S. only for launch).
-          </p>
 
           {error ? (
             <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">

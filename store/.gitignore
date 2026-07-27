@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local order webhook logs
+/order-logs
+
 # vercel
 .vercel
 

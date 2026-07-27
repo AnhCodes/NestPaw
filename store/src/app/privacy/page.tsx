@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Privacy",
-};
+  description:
+    "How NestPaw collects, uses, and protects customer information at checkout and on our website.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

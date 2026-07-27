@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Shipping & returns",
-};
+  description:
+    "NestPaw shipping timelines, delivery windows, and return policy for U.S. orders.",
+  path: "/shipping",
+});
 
 export default function ShippingPage() {
   return (

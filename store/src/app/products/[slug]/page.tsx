@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductCard } from "@/components/product-card";
 import { StockStatus } from "@/components/stock-status";
+import { createPageMetadata } from "@/lib/seo";
 import { formatPrice, getProduct, products } from "@/lib/products";
+import { getSiteUrl } from "@/lib/site";
 
 type Params = Promise<{ slug: string }>;
 
@@ -16,10 +18,12 @@ export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) return { title: "Product" };
-  return {
+  return createPageMetadata({
     title: product.name,
     description: product.tagline,
-  };
+    path: `/products/${slug}`,
+    image: `${getSiteUrl()}${product.image}`,
+  });
 }
 
 export default async function ProductPage({ params }: { params: Params }) {
@@ -31,16 +35,16 @@ export default async function ProductPage({ params }: { params: Params }) {
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 3);
 
-  const bundleNudge =
+  const pairingNudge =
     product.slug === "forage-snuffle-mat"
-      ? getProduct("calm-evening-bundle")
+      ? getProduct("suction-lick-mat")
       : null;
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         <div className="space-y-3">
-          <div className="relative aspect-[4/5] overflow-hidden bg-stone">
+          <div className="relative aspect-[2/3] overflow-hidden bg-stone">
             <Image
               src={product.image}
               alt={product.name}
@@ -58,7 +62,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               {product.gallery.slice(1).map((src) => (
                 <div
                   key={src}
-                  className="relative aspect-[3/4] overflow-hidden bg-stone"
+                  className="relative aspect-[2/3] overflow-hidden bg-stone"
                 >
                   <Image
                     src={src}
@@ -139,20 +143,20 @@ export default async function ProductPage({ params }: { params: Params }) {
             </ul>
           </div>
 
-          {bundleNudge ? (
+          {pairingNudge ? (
             <div className="mt-10 border border-line bg-surface p-6">
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
                 Pair it
               </p>
               <p className="mt-2 font-display text-2xl font-semibold text-ink">
-                {bundleNudge.name}
+                {pairingNudge.name}
               </p>
-              <p className="mt-2 text-sm text-ink-soft">{bundleNudge.tagline}</p>
+              <p className="mt-2 text-sm text-ink-soft">{pairingNudge.tagline}</p>
               <Link
-                href={`/products/${bundleNudge.slug}`}
+                href={`/products/${pairingNudge.slug}`}
                 className="mt-4 inline-block text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-ink/70 transition hover:text-ink"
               >
-                Save with the bundle · {formatPrice(bundleNudge.price)} →
+                Add the lick mat · {formatPrice(pairingNudge.price)} →
               </Link>
             </div>
           ) : null}

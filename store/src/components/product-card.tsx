@@ -19,7 +19,7 @@ export function ProductCard({
     ? "h-full min-h-[16rem]"
     : large
       ? "h-full min-h-[22rem]"
-      : "aspect-[4/5]";
+      : "aspect-[2/3]";
 
   return (
     <Link
@@ -38,7 +38,7 @@ export function ProductCard({
               ? "(max-width: 768px) 100vw, 50vw"
               : "(max-width: 768px) 100vw, 33vw"
           }
-          className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
+          className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.03]"
         />
         <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
 

@@ -65,10 +65,10 @@ export default function CartPage() {
                   >
                     {product.name}
                   </Link>
-                  <p className="mt-1 text-sm text-ink/60">
-                    {formatPrice(product.price)}
-                  </p>
-                  <div className="mt-4 flex items-center gap-3">
+                </div>
+                <div className="col-span-2 flex flex-col items-end justify-center gap-3 sm:col-span-1 sm:col-start-3">
+                  <p className="text-right text-ink">{formatPrice(lineTotal)}</p>
+                  <div className="flex items-center gap-3">
                     <label className="text-xs uppercase tracking-wider text-ink/50">
                       Qty
                       <select
@@ -94,9 +94,6 @@ export default function CartPage() {
                     </button>
                   </div>
                 </div>
-                <p className="hidden text-right text-ink sm:block">
-                  {formatPrice(lineTotal)}
-                </p>
               </div>
             ))}
           </div>

@@ -3,6 +3,7 @@ import { Manrope, Syne } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getSiteUrl, siteDescription, siteName } from "@/lib/site";
 import "./globals.css";
 
 const display = Syne({
@@ -18,13 +19,25 @@ const body = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "NestPaw",
-    template: "%s · NestPaw",
+    default: siteName,
+    template: `%s · ${siteName}`,
   },
-  applicationName: "NestPaw",
-  description:
-    "Premium dog comfort and home-ease accessories. Products that help your dog feel calm and comfortable — and make home life easier for you.",
+  applicationName: siteName,
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
