@@ -18,6 +18,8 @@ export type CartItem = {
 type CartContextValue = {
   items: CartItem[];
   hydrated: boolean;
+  stockById: Record<string, number>;
+  getStock: (productId: string) => number;
   addItem: (productId: string, quantity?: number) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
@@ -74,7 +76,17 @@ function subscribeHydration() {
   return () => {};
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
+function withStock(product: Product, stock: number): Product {
+  return { ...product, stock };
+}
+
+export function CartProvider({
+  children,
+  stockById = {},
+}: {
+  children: ReactNode;
+  stockById?: Record<string, number>;
+}) {
   const items = useSyncExternalStore(subscribe, readCart, getServerSnapshot);
   const hydrated = useSyncExternalStore(
     subscribeHydration,
@@ -82,47 +94,58 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => false,
   );
 
-  const addItem = useCallback((productId: string, quantity = 1) => {
-    const product = products.find((p) => p.id === productId);
-    if (!product || product.stock <= 0) return;
+  const getStock = useCallback(
+    (productId: string) => stockById[productId] ?? 0,
+    [stockById],
+  );
 
-    const prev = readCart();
-    const existing = prev.find((i) => i.productId === productId);
-    if (existing) {
-      const nextQty = Math.min(product.stock, existing.quantity + quantity);
-      writeCart(
-        prev.map((i) =>
-          i.productId === productId ? { ...i, quantity: nextQty } : i,
-        ),
-      );
-      return;
-    }
-    writeCart([
-      ...prev,
-      { productId, quantity: Math.min(product.stock, quantity) },
-    ]);
-  }, []);
+  const addItem = useCallback(
+    (productId: string, quantity = 1) => {
+      const product = products.find((p) => p.id === productId);
+      const stock = getStock(productId);
+      if (!product || stock <= 0) return;
+
+      const prev = readCart();
+      const existing = prev.find((i) => i.productId === productId);
+      if (existing) {
+        const nextQty = Math.min(stock, existing.quantity + quantity);
+        writeCart(
+          prev.map((i) =>
+            i.productId === productId ? { ...i, quantity: nextQty } : i,
+          ),
+        );
+        return;
+      }
+      writeCart([
+        ...prev,
+        { productId, quantity: Math.min(stock, quantity) },
+      ]);
+    },
+    [getStock],
+  );
 
   const removeItem = useCallback((productId: string) => {
     writeCart(readCart().filter((i) => i.productId !== productId));
   }, []);
 
-  const setQuantity = useCallback((productId: string, quantity: number) => {
-    const product = products.find((p) => p.id === productId);
-    const max = product?.stock ?? 0;
-    const prev = readCart();
-    if (quantity <= 0 || max <= 0) {
-      writeCart(prev.filter((i) => i.productId !== productId));
-      return;
-    }
-    writeCart(
-      prev.map((i) =>
-        i.productId === productId
-          ? { ...i, quantity: Math.min(max, quantity) }
-          : i,
-      ),
-    );
-  }, []);
+  const setQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      const max = getStock(productId);
+      const prev = readCart();
+      if (quantity <= 0 || max <= 0) {
+        writeCart(prev.filter((i) => i.productId !== productId));
+        return;
+      }
+      writeCart(
+        prev.map((i) =>
+          i.productId === productId
+            ? { ...i, quantity: Math.min(max, quantity) }
+            : i,
+        ),
+      );
+    },
+    [getStock],
+  );
 
   const clearCart = useCallback(() => writeCart([]), []);
 
@@ -132,7 +155,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const product = products.find((p) => p.id === item.productId);
         if (!product) return null;
         return {
-          product,
+          product: withStock(product, getStock(product.id)),
           quantity: item.quantity,
           lineTotal: product.price * item.quantity,
         };
@@ -142,7 +165,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantity: number;
       lineTotal: number;
     }[];
-  }, [items]);
+  }, [items, getStock]);
 
   const itemCount = useMemo(
     () => items.reduce((sum, i) => sum + i.quantity, 0),
@@ -158,6 +181,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => ({
       items,
       hydrated,
+      stockById,
+      getStock,
       addItem,
       removeItem,
       setQuantity,
@@ -169,6 +194,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [
       items,
       hydrated,
+      stockById,
+      getStock,
       addItem,
       removeItem,
       setQuantity,

@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
-import {
-  categories,
-  getProductsByCategory,
-  type Category,
-} from "@/lib/products";
+import { getProductsWithStock } from "@/lib/catalog";
+import { categories, type Category } from "@/lib/products";
 import { createPageMetadata } from "@/lib/seo";
 
 type SearchParams = Promise<{ category?: string }>;
@@ -26,7 +23,9 @@ export default async function ShopPage({
   const category = (
     categories.some((c) => c.id === raw) ? raw : "all"
   ) as Category | "all";
-  const list = getProductsByCategory(category);
+  const all = await getProductsWithStock();
+  const list =
+    category === "all" ? all : all.filter((p) => p.category === category);
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">

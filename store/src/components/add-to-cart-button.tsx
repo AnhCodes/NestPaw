@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useCart } from "@/components/cart-provider";
-import { isInStock, products } from "@/lib/products";
+import { products } from "@/lib/products";
 
 export function AddToCartButton({
   productId,
@@ -11,10 +11,10 @@ export function AddToCartButton({
   productId: string;
   label?: string;
 }) {
-  const { addItem } = useCart();
+  const { addItem, getStock } = useCart();
   const [added, setAdded] = useState(false);
   const product = products.find((p) => p.id === productId);
-  const available = product ? isInStock(product) : false;
+  const available = Boolean(product) && getStock(productId) > 0;
 
   if (!available) {
     return (

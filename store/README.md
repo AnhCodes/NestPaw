@@ -27,9 +27,25 @@ Without keys, checkout shows a clear setup message (no fake charges).
 
 ## Stock
 
-Edit `stock` on each product in `src/lib/products.ts`. All start at `0` until samples/wholesale arrive.
+Live stock lives in Postgres (`inventory` table). Edit it in **[/admin/inventory](http://localhost:3000/admin)** after signing in with `ADMIN_PASSWORD`. Catalog copy still lives in `src/lib/products.ts`.
+
+```bash
+# First-time local DB
+createdb nestpaw   # or use Neon DATABASE_URL
+npm run db:push
+npm run db:seed
+```
+
+## Admin
+
+1. Set `DATABASE_URL`, `ADMIN_PASSWORD` (and optional `ADMIN_SESSION_SECRET`) in `.env.local`
+2. Open [http://localhost:3000/admin](http://localhost:3000/admin)
+3. Manage orders, customers, inventory, and revenue overview
+
+Production: accept Neon Marketplace terms, then `vercel integration add neon --plan free_v3`, and set admin env vars on Vercel.
 
 ## What's included
 
 - Home, Shop, PDPs, Cart, Stripe Checkout, success page  
 - About, Shipping & returns, Contact, Privacy  
+- Internal `/admin` dashboard (password-gated)  

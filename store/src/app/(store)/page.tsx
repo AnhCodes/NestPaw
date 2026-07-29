@@ -1,11 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
-import { products } from "@/lib/products";
+import { getProductsWithStock } from "@/lib/catalog";
 
-const featured = products.filter((p) => p.featured);
-const heroFeature = featured[0];
-const sideFeatures = featured.slice(1, 3);
 const marqueeItems = [
   "Free shipping over $40",
   "Ships within 24 hours",
@@ -15,7 +12,12 @@ const marqueeItems = [
   "No medical claims — just better home routines",
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getProductsWithStock();
+  const featured = products.filter((p) => p.featured);
+  const heroFeature = featured[0];
+  const sideFeatures = featured.slice(1, 3);
+
   return (
     <>
       <section className="relative min-h-[100svh] overflow-hidden bg-ink">

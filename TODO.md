@@ -1,19 +1,24 @@
 # NestPaw — To-do
 
-## Before soft launch
+## Up next
 
 - [ ] Finalize inquiries on Alibaba and buy sample stock
 - [ ] Finish Stripe account activation (business details, bank payout)
-- [ ] Add Stripe + Resend env vars and `NEXT_PUBLIC_SITE_URL` on Vercel (Preview + Production)
+- [ ] Accept Neon Marketplace terms + `vercel integration add neon`
+- [ ] Add Vercel env vars: Stripe, Resend, `NEXT_PUBLIC_SITE_URL`, `DATABASE_URL`, `ADMIN_PASSWORD`
+- [ ] Run `npm run db:push` + `npm run db:seed` against the hosted database
 - [ ] Verify success / cancel redirects on a Preview URL
-- [ ] Improve product image quality on catalog / PDPs
+- [ ] Point deployed Stripe webhook at `/api/stripe-webhook` with the live `STRIPE_WEBHOOK_SECRET`
+- [ ] Smoke-test `/admin` login, inventory editing, and order persistence from a test checkout
+
+## Pre-launch polish
+
 - [ ] Soft-launch smoke test: shop → cart → Stripe test pay → success page on mobile + desktop
-- [ ] Point deployed Stripe webhook at `/api/stripe-webhook` (use live `STRIPE_WEBHOOK_SECRET`)
 
 ## When inventory arrives
 
 - [ ] QA samples (quality, sizing notes, pack contents, real ship times)
-- [ ] Update `stock` in `store/src/lib/products.ts` to real counts
+- [ ] Set live stock in `/admin/inventory`
 - [ ] Confirm shipping & returns copy matches real carrier / timeline / return address
 - [ ] Decide week-1 fulfillment path (self-ship vs 3PL) and write a pack/ship checklist
 - [ ] Set up packing supplies + return address label
@@ -25,31 +30,10 @@
 ## Launch week
 
 - [ ] One real $1–full-price test order to yourself, then refund
-- [ ] Soft-launch (friends/family or small ad) and fulfill manually
-- [ ] (Optional) Simple analytics (Vercel Analytics or Plausible)
+- [ ] Soft-launch (friends/family or small ad) and fulfill manually via `/admin/orders`
+- [ ] Add simple analytics (Vercel Analytics or Plausible)
 
-## Internal admin dashboard (post-launch OK)
-
-- [ ] Plan data model (orders, customers, products, inventory, fulfillment, tracking)
-- [ ] Add admin auth / protected routes
-- [ ] Orders view (customer info, items, totals, payment + shipping details)
-- [ ] Customer view (history + contact/shipping info)
-- [ ] Inventory editor (stock updates + low-stock warnings)
-- [ ] Fulfillment workflow (unfulfilled → packed → shipped → delivered + tracking)
-- [ ] Revenue summary (sales, order count, average order value)
-
-## Ongoing
+## Later
 
 - [ ] Improve broader SEO after first sales data
 - [ ] Reorder winners in bulk once samples convert
-
-## Progress log
-
-### 2026-07-27
-
-- Local Stripe test keys + full checkout → success page
-- Cart hydration fix (`getServerSnapshot`)
-- Checkout / success page copy cleanup
-- Stripe webhook route + local order logging (`order-logs/orders.jsonl`)
-- Contact form via Resend (verified end-to-end)
-- Basic SEO: titles/descriptions, Open Graph image, sitemap, robots

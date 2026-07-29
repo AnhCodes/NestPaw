@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { getProductByIdWithStock } from "@/lib/catalog";
 import {
   FLAT_SHIPPING,
   FREE_SHIPPING_THRESHOLD,
-  products,
 } from "@/lib/products";
 import {
   getSiteUrl,
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
   const siteUrl = getSiteUrl();
 
   for (const item of items) {
-    const product = products.find((p) => p.id === item.productId);
+    const product = await getProductByIdWithStock(item.productId);
     if (!product) {
       return NextResponse.json(
         { error: `Unknown product: ${item.productId}` },

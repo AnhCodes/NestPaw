@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductCard } from "@/components/product-card";
 import { StockStatus } from "@/components/stock-status";
+import {
+  getProductWithStock,
+  getProductsWithStock,
+} from "@/lib/catalog";
 import { createPageMetadata } from "@/lib/seo";
 import { formatPrice, getProduct, products } from "@/lib/products";
 import { getSiteUrl } from "@/lib/site";
@@ -28,16 +32,17 @@ export async function generateMetadata({ params }: { params: Params }) {
 
 export default async function ProductPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductWithStock(slug);
   if (!product) notFound();
 
-  const related = products
+  const all = await getProductsWithStock();
+  const related = all
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 3);
 
   const pairingNudge =
     product.slug === "forage-snuffle-mat"
-      ? getProduct("suction-lick-mat")
+      ? await getProductWithStock("suction-lick-mat")
       : null;
 
   return (

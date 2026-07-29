@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { getStripe } from "@/lib/stripe";
+import { isDatabaseConfigured } from "@/lib/db";
 import { logOrder, type LoggedOrderLineItem } from "@/lib/order-logger";
+import { persistOrderFromStripe } from "@/lib/orders";
+import { getStripe } from "@/lib/stripe";
 
 // Webhooks need the raw body for signature verification.
 export const runtime = "nodejs";
@@ -100,7 +102,7 @@ export async function POST(request: Request) {
 
   const lineItems = session.line_items?.data ?? [];
 
-  logOrder({
+  const logged = {
     orderId: session.id,
     createdAt: new Date().toISOString(),
     eventType: event.type,
@@ -116,7 +118,33 @@ export async function POST(request: Request) {
     shippingAddress:
       session.collected_information?.shipping_details?.address ?? null,
     lineItems: lineItems.map(toLineItem),
-  });
+  };
+
+  // Keep local JSONL for local debugging; Postgres is the source of truth in prod.
+  try {
+    logOrder(logged);
+  } catch (err) {
+    console.error("[nestpaw][orders] jsonl log failed", err);
+  }
+
+  if (isDatabaseConfigured()) {
+    try {
+      const result = await persistOrderFromStripe(logged);
+      console.log(
+        "[nestpaw][orders] persisted",
+        result.orderId,
+        result.created ? "created" : "updated",
+      );
+    } catch (err) {
+      console.error("[nestpaw][orders] db persist failed", err);
+      return NextResponse.json(
+        { error: "Failed to persist order" },
+        { status: 500 },
+      );
+    }
+  } else {
+    console.warn("[nestpaw][orders] DATABASE_URL missing — skipped DB persist");
+  }
 
   return NextResponse.json({ received: true });
 }

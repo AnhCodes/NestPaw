@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { submitStorefrontReturnRequest } from "@/lib/orders";
 
 type ContactBody = {
   name?: string;
   email?: string;
   message?: string;
   company?: string;
+  inquiryType?: "general" | "return-request";
+  orderId?: string;
 };
 
 export async function POST(request: Request) {
@@ -38,6 +41,8 @@ export async function POST(request: Request) {
   const name = body.name?.trim();
   const email = body.email?.trim();
   const message = body.message?.trim();
+  const inquiryType = body.inquiryType === "return-request" ? "return-request" : "general";
+  const orderId = body.orderId?.trim();
 
   if (!name || !email || !message) {
     return NextResponse.json(
@@ -53,6 +58,25 @@ export async function POST(request: Request) {
     );
   }
 
+  if (inquiryType === "return-request" && !orderId) {
+    return NextResponse.json(
+      { error: "Order number is required for a return request." },
+      { status: 400 },
+    );
+  }
+
+  if (inquiryType === "return-request") {
+    const result = await submitStorefrontReturnRequest({
+      orderId: orderId!,
+      name,
+      email,
+      message,
+    });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+  }
+
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -64,8 +88,14 @@ export async function POST(request: Request) {
         from,
         to: [to],
         reply_to: email,
-        subject: `NestPaw contact from ${name}`,
-        text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+        subject:
+          inquiryType === "return-request"
+            ? `NestPaw return request from ${name}`
+            : `NestPaw contact from ${name}`,
+        text:
+          inquiryType === "return-request"
+            ? `Type: Return request\nOrder: ${orderId}\nName: ${name}\nEmail: ${email}\n\n${message}`
+            : `Type: General contact\nName: ${name}\nEmail: ${email}\n\n${message}`,
       }),
     });
 

@@ -9,7 +9,7 @@ export type Product = {
   description: string;
   price: number;
   compareAt?: number;
-  /** Units available to sell. Update this when samples/inventory arrive. */
+  /** Fallback only — live stock lives in the `inventory` table / admin UI. */
   stock: number;
   category: Category;
   image: string;
@@ -49,7 +49,12 @@ export const products: Product[] = [
       "Gentle enough for weekly home use",
       "Demo-friendly — results you can see in one session",
     ],
-    includes: ["Deshedding brush", "Grooming glove", "Quick-start care card"],
+    includes: [
+      "Deshedding brush",
+      "Grooming glove",
+      "Dog calm tips card",
+      "Single packaged dog treat",
+    ],
     shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
     featured: true,
     badge: "Best seller",
@@ -73,7 +78,12 @@ export const products: Product[] = [
       "Machine-washable fleece construction",
       "Ideal rainy-day enrichment without screens or chaos",
     ],
-    includes: ["Snuffle mat", "Storage strap", "Foraging tips insert"],
+    includes: [
+      "Snuffle mat",
+      "Storage strap",
+      "Dog calm tips card",
+      "Single packaged dog treat",
+    ],
     shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
     featured: true,
   },
@@ -96,7 +106,11 @@ export const products: Product[] = [
       "Integrated lick textures for wet food or spreadables",
       "Easy to rinse; pairs well with the Forage Snuffle Mat",
     ],
-    includes: ["Silicone slow-feeder mat", "Care guide"],
+    includes: [
+      "Silicone slow-feeder mat",
+      "Dog calm tips card",
+      "Single packaged dog treat",
+    ],
     shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
     featured: true,
   },
@@ -119,7 +133,12 @@ export const products: Product[] = [
       "USB-friendly for small-space living",
       "Includes safety-first pacing tips",
     ],
-    includes: ["Nail grinder", "USB charging cable", "Care guide"],
+    includes: [
+      "Nail grinder",
+      "USB charging cable",
+      "Dog calm tips card",
+      "Single packaged dog treat",
+    ],
     shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
     featured: true,
   },
@@ -134,16 +153,17 @@ export const products: Product[] = [
     stock: 0,
     category: "calm",
     image: "/products/nestpaw-lick-mat-fill.png",
-    gallery: [
-      "/products/nestpaw-lick-mat-fill.png",
-      "/products/nestpaw-lick-mat-gallery-v2.png",
-    ],
+    gallery: ["/products/nestpaw-lick-mat-fill.png"],
     benefits: [
       "Turns spreadable treats into a longer-lasting calm activity",
       "Suction backing helps keep the mat in place on smooth surfaces",
       "Useful for grooming, bath time, or crate wind-downs",
     ],
-    includes: ["Suction lick mat", "Care guide"],
+    includes: [
+      "Suction lick mat",
+      "Dog calm tips card",
+      "Single packaged dog treat",
+    ],
     shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
   },
 ];
