@@ -76,7 +76,10 @@ export const orderItems = pgTable("order_items", {
 
 export const inventory = pgTable("inventory", {
   productId: text("product_id").primaryKey(),
+  /** Warehouse / admin on-hand count. Edited in admin; updated by purchase logs. */
   stock: integer("stock").notNull().default(0),
+  /** Published availability on the storefront. Only updates via explicit sync. */
+  storefrontStock: integer("storefront_stock").notNull().default(0),
   lowStockThreshold: integer("low_stock_threshold").notNull().default(3),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -96,6 +99,7 @@ export const inventoryPurchaseItems = pgTable("inventory_purchase_items", {
     .references(() => inventoryPurchases.id, { onDelete: "cascade" }),
   inventoryItemId: text("inventory_item_id").notNull(),
   quantity: integer("quantity").notNull(),
+  lineCostCents: integer("line_cost_cents").notNull().default(0),
 });
 
 export type Customer = typeof customers.$inferSelect;

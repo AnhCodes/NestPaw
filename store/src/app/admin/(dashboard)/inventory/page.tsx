@@ -1,11 +1,25 @@
 import Link from "next/link";
 import {
+  getKitComponentIds,
   inventoryCatalog,
   inventorySectionLabels,
   type InventorySection,
 } from "@/lib/inventory-catalog";
 import { listInventoryRows, listRecentInventoryPurchases } from "@/lib/orders";
 import { formatPrice } from "@/lib/products";
+
+function componentMin(
+  storefrontProductId: string | undefined,
+  byId: Map<string, { stock: number; storefrontStock: number }>,
+  field: "stock" | "storefrontStock",
+) {
+  if (!storefrontProductId) return 0;
+  const components = getKitComponentIds(storefrontProductId);
+  if (!components || components.length === 0) {
+    return byId.get(storefrontProductId)?.[field] ?? 0;
+  }
+  return Math.min(...components.map((id) => byId.get(id)?.[field] ?? 0));
+}
 
 function formatPurchaseDate(value: Date | string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -15,7 +29,12 @@ function formatPurchaseDate(value: Date | string) {
   }).format(new Date(value));
 }
 
-export default async function AdminInventoryPage() {
+export default async function AdminInventoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ synced?: string }>;
+}) {
+  const { synced } = await searchParams;
   const [rows, recentPurchases] = await Promise.all([
     listInventoryRows(),
     listRecentInventoryPurchases(8),
@@ -29,20 +48,68 @@ export default async function AdminInventoryPage() {
     "shipping-supplies",
   ];
 
+  const storeProducts = inventoryCatalog.filter(
+    (item) => item.section === "store-products",
+  );
+  const outOfSyncCount = storeProducts.filter((item) => {
+    const row = byId.get(item.id);
+    if ((row?.stock ?? 0) !== (row?.storefrontStock ?? 0)) return true;
+    if (!item.storefrontProductId || !getKitComponentIds(item.storefrontProductId)) {
+      return false;
+    }
+    return (
+      componentMin(item.storefrontProductId, byId, "storefrontStock") !==
+      componentMin(item.storefrontProductId, byId, "stock")
+    );
+  }).length;
+
   return (
     <div>
       <h1 className="font-display text-4xl font-semibold tracking-[-0.04em]">
         Inventory
       </h1>
       <p className="mt-2 text-[color:var(--admin-muted)]">
-        Track both storefront products and packing supplies in one place.
+        Admin stock updates immediately. Storefront stock only changes when you sync.
       </p>
+
+      {synced === "1" ? (
+        <p className="mt-4 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] px-4 py-3 text-sm text-[color:var(--admin-accent)]">
+          Storefront stock synced from admin inventory.
+        </p>
+      ) : null}
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
+        <div>
+          <p className="font-medium text-[color:var(--admin-fg)]">
+            Sync stock to storefront
+          </p>
+          <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
+            Publish admin warehouse counts for store products. For the shedding
+            brush kit, storefront stock becomes the lower of brush and glove.
+          </p>
+          {outOfSyncCount > 0 ? (
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-warning-fg)]">
+              {outOfSyncCount} product{outOfSyncCount === 1 ? "" : "s"} out of sync
+            </p>
+          ) : (
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-accent)]">
+              Store products are in sync
+            </p>
+          )}
+        </div>
+        <form action="/api/admin/inventory/sync" method="post">
+          <button type="submit" className="btn-primary">
+            Sync to storefront
+          </button>
+        </form>
+      </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
         <div>
           <p className="font-medium text-[color:var(--admin-fg)]">Purchase logs</p>
           <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
-            Save what you ordered, total spend, and quantities by item.
+            Save what you ordered, total spend, and quantities by item. Admin stock
+            increases automatically.
           </p>
         </div>
         <Link href="/admin/inventory/purchases/new" className="btn-primary">
@@ -52,7 +119,7 @@ export default async function AdminInventoryPage() {
 
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-2xl font-semibold text-ink">Recent purchase logs</h2>
+          <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">Recent purchase logs</h2>
           <p className="text-xs uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
             Alibaba and suppliers
           </p>
@@ -88,7 +155,10 @@ export default async function AdminInventoryPage() {
                       className="border border-[color:var(--admin-border)] px-2 py-1 text-xs text-[color:var(--admin-muted)]"
                     >
                       {(catalogById.get(item.inventoryItemId)?.name ?? item.inventoryItemId) +
-                        ` x${item.quantity}`}
+                        ` x${item.quantity}` +
+                        (item.lineCostCents
+                          ? ` · ${formatPrice(item.lineCostCents / 100)}`
+                          : "")}
                     </span>
                   ))}
                 </div>
@@ -109,15 +179,30 @@ export default async function AdminInventoryPage() {
 
           return (
             <section key={section}>
-              <h2 className="font-display text-2xl font-semibold text-ink">
+              <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">
                 {inventorySectionLabels[section]}
               </h2>
               <div className="mt-4 space-y-4">
                 {items.map((item) => {
                   const row = byId.get(item.id);
                   const stock = row?.stock ?? 0;
+                  const storefrontStock = row?.storefrontStock ?? 0;
+                  const isKitComponent = Boolean(
+                    item.storefrontProductId &&
+                      getKitComponentIds(item.storefrontProductId),
+                  );
+                  const kitStorefront = isKitComponent
+                    ? componentMin(item.storefrontProductId, byId, "storefrontStock")
+                    : storefrontStock;
+                  const kitAdminAvailable = isKitComponent
+                    ? componentMin(item.storefrontProductId, byId, "stock")
+                    : stock;
                   const threshold = row?.lowStockThreshold ?? item.lowStockThreshold;
                   const low = stock <= threshold;
+                  const outOfSync =
+                    item.section === "store-products" &&
+                    (stock !== storefrontStock ||
+                      (isKitComponent && kitStorefront !== kitAdminAvailable));
 
                   return (
                     <form
@@ -133,8 +218,20 @@ export default async function AdminInventoryPage() {
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           {item.section === "store-products" ? (
+                            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
+                              {isKitComponent
+                                ? `Kit storefront: ${kitStorefront} (min brush/glove)`
+                                : `Storefront: ${storefrontStock}`}
+                            </span>
+                          ) : null}
+                          {isKitComponent ? (
                             <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-accent)]">
-                              Syncs to storefront
+                              Kit component · admin kits: {kitAdminAvailable}
+                            </span>
+                          ) : null}
+                          {outOfSync ? (
+                            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-warning-fg)]">
+                              Out of sync
                             </span>
                           ) : null}
                           {low ? (
@@ -146,7 +243,7 @@ export default async function AdminInventoryPage() {
                       </div>
                       <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
                         <label className="block text-sm">
-                          Units in stock
+                          Admin stock
                           <input
                             type="number"
                             name="stock"

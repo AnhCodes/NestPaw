@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Stripe is not configured. Add STRIPE_SECRET_KEY to store/.env.local",
+          "Stripe is not configured. Add STRIPE_SECRET_KEY_LOCAL (dev) or STRIPE_SECRET_KEY_LIVE (prod).",
       },
       { status: 503 },
     );

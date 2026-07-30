@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
 import { formatPrice } from "@/lib/products";
-import { getRevenueSummary, listInventoryRows, listOrders } from "@/lib/orders";
+import {
+  getInventorySpendSummary,
+  getRevenueSummary,
+  listInventoryRows,
+  listOrders,
+} from "@/lib/orders";
 import { getAdminWebAnalytics } from "@/lib/vercel-web-analytics";
 
 function formatCents(cents: number) {
@@ -9,12 +14,14 @@ function formatCents(cents: number) {
 }
 
 export default async function AdminOverviewPage() {
-  const [summary, orders, inventoryRows, analytics] = await Promise.all([
-    getRevenueSummary(),
-    listOrders(),
-    listInventoryRows(),
-    getAdminWebAnalytics(7),
-  ]);
+  const [summary, inventorySpend, orders, inventoryRows, analytics] =
+    await Promise.all([
+      getRevenueSummary(),
+      getInventorySpendSummary(),
+      listOrders(),
+      listInventoryRows(),
+      getAdminWebAnalytics(7),
+    ]);
 
   const recent = orders.slice(0, 8);
 
@@ -27,7 +34,7 @@ export default async function AdminOverviewPage() {
         Sales, fulfillment queue, and inventory at a glance.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
             Paid orders
@@ -50,6 +57,21 @@ export default async function AdminOverviewPage() {
           </p>
           <p className="mt-3 font-display text-3xl font-semibold">
             {formatCents(summary.averageOrderValueCents)}
+          </p>
+        </div>
+        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
+            Inventory spend
+          </p>
+          <p className="mt-3 font-display text-3xl font-semibold">
+            {formatCents(inventorySpend.spendCents)}
+          </p>
+          <p className="mt-2 text-xs text-[color:var(--admin-muted)]">
+            {inventorySpend.purchaseCount === 0
+              ? "No purchase logs yet"
+              : `${inventorySpend.purchaseCount} purchase log${
+                  inventorySpend.purchaseCount === 1 ? "" : "s"
+                }`}
           </p>
         </div>
       </div>
@@ -205,27 +227,30 @@ export default async function AdminOverviewPage() {
             </Link>
           </div>
           <div className="mt-4 divide-y divide-[color:var(--admin-border)] border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
-            {inventoryRows.length === 0 ? (
+            {inventoryRows.filter((row) => getInventoryCatalogItem(row.productId))
+              .length === 0 ? (
               <p className="px-4 py-6 text-sm text-[color:var(--admin-muted)]">
                 No inventory items yet.
               </p>
             ) : (
-              inventoryRows.map((row) => {
-                const item = getInventoryCatalogItem(row.productId);
-                return (
-                  <div
-                    key={row.productId}
-                    className="flex items-center justify-between gap-4 px-4 py-3"
-                  >
-                    <p className="text-sm font-medium">
-                      {item?.name ?? row.productId}
-                    </p>
-                    <p className="text-sm text-[color:var(--admin-muted)]">
-                      {row.stock} in stock
-                    </p>
-                  </div>
-                );
-              })
+              inventoryRows
+                .filter((row) => getInventoryCatalogItem(row.productId))
+                .map((row) => {
+                  const item = getInventoryCatalogItem(row.productId);
+                  return (
+                    <div
+                      key={row.productId}
+                      className="flex items-center justify-between gap-4 px-4 py-3"
+                    >
+                      <p className="text-sm font-medium">
+                        {item?.name ?? row.productId}
+                      </p>
+                      <p className="text-sm text-[color:var(--admin-muted)]">
+                        {row.stock} in stock
+                      </p>
+                    </div>
+                  );
+                })
             )}
           </div>
         </section>

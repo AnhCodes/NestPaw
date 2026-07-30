@@ -10,7 +10,12 @@ import {
   type FulfillmentStatus,
   type ReturnStatus,
 } from "@/lib/db/schema";
-import { decrementStockForItems, newId, stableCustomerId } from "@/lib/inventory";
+import {
+  decrementStockForItems,
+  incrementAdminStock,
+  newId,
+  stableCustomerId,
+} from "@/lib/inventory";
 import type { LoggedOrder } from "@/lib/order-logger";
 
 export async function persistOrderFromStripe(order: LoggedOrder) {
@@ -276,6 +281,21 @@ export async function getRevenueSummary() {
   return { orderCount, revenueCents, averageOrderValueCents };
 }
 
+export async function getInventorySpendSummary() {
+  const db = getDb();
+  const [row] = await db
+    .select({
+      purchaseCount: sql<number>`count(*)::int`,
+      spendCents: sql<number>`coalesce(sum(${inventoryPurchases.totalCostCents}), 0)::int`,
+    })
+    .from(inventoryPurchases);
+
+  return {
+    purchaseCount: row?.purchaseCount ?? 0,
+    spendCents: row?.spendCents ?? 0,
+  };
+}
+
 export async function listInventoryRows() {
   const db = getDb();
   return db.select().from(inventory).orderBy(asc(inventory.productId));
@@ -285,7 +305,7 @@ export async function createInventoryPurchase(input: {
   vendor: string;
   totalCostCents: number;
   notes?: string | null;
-  items: { inventoryItemId: string; quantity: number }[];
+  items: { inventoryItemId: string; quantity: number; lineCostCents: number }[];
 }) {
   const db = getDb();
   const purchaseId = newId("po");
@@ -306,8 +326,10 @@ export async function createInventoryPurchase(input: {
         purchaseId,
         inventoryItemId: item.inventoryItemId,
         quantity: item.quantity,
+        lineCostCents: item.lineCostCents,
       })),
     );
+    await incrementAdminStock(input.items);
   }
 
   return purchaseId;

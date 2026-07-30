@@ -18,9 +18,9 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Stripe
 
 1. Create a [Stripe account](https://dashboard.stripe.com/register) (or sandbox).  
-2. Copy **Secret key** → `STRIPE_SECRET_KEY`  
-3. Copy **Publishable key** → `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (optional for hosted Checkout)  
-4. Set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`  
+2. Copy **Test Secret key** → `STRIPE_SECRET_KEY_LOCAL` and **Test Publishable key** → `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LOCAL`
+3. Copy **Live Secret key** → `STRIPE_SECRET_KEY_LIVE` and **Live Publishable key** → `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE` (for Vercel Production)
+4. Set `NEXT_PUBLIC_SITE_URL=https://shopnestpaw.com` and `NEXT_PUBLIC_SITE_URL_LOCAL=http://localhost:3000`
 5. Checkout creates a Stripe Checkout Session and redirects to Stripe-hosted payment.
 
 Without keys, checkout shows a clear setup message (no fake charges).

@@ -49,6 +49,7 @@ export async function POST(
     .values({
       productId,
       stock,
+      storefrontStock: 0,
       lowStockThreshold,
       updatedAt: new Date(),
     })
@@ -61,8 +62,7 @@ export async function POST(
       },
     });
 
-  revalidatePath("/");
-  revalidatePath("/shop");
+  // Admin-only save — does not publish to storefront.
   revalidatePath("/admin");
   revalidatePath("/admin/inventory");
 

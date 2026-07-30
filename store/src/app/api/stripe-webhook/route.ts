@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 import { isDatabaseConfigured } from "@/lib/db";
 import { logOrder, type LoggedOrderLineItem } from "@/lib/order-logger";
 import { persistOrderFromStripe } from "@/lib/orders";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, getStripeWebhookSecret } from "@/lib/stripe";
 
 // Webhooks need the raw body for signature verification.
 export const runtime = "nodejs";
@@ -56,10 +56,10 @@ export async function POST(request: Request) {
   }
 
   const signature = request.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = getStripeWebhookSecret();
   if (!signature || !webhookSecret) {
     return NextResponse.json(
-      { error: "Missing stripe-signature header or STRIPE_WEBHOOK_SECRET" },
+      { error: "Missing stripe-signature header or Stripe webhook secret" },
       { status: 400 },
     );
   }

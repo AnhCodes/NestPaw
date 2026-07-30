@@ -11,6 +11,7 @@ export type InventoryCatalogItem = {
   name: string;
   section: InventorySection;
   lowStockThreshold: number;
+  /** Sold storefront product this warehouse item belongs to (kits can share one). */
   storefrontProductId?: string;
 };
 
@@ -21,14 +22,42 @@ export const inventorySectionLabels: Record<InventorySection, string> = {
   "shipping-supplies": "Shipping supplies",
 };
 
-export const inventoryCatalog: InventoryCatalogItem[] = [
-  ...products.map((product) => ({
-    id: product.id,
-    name: product.name,
-    section: "store-products" as const,
+/** Storefront kits assembled from multiple warehouse items. */
+export const kitAssemblies: Record<string, string[]> = {
+  "shed-brush": ["deshedding-brush", "grooming-glove"],
+};
+
+const kitComponentIds = new Set(Object.values(kitAssemblies).flat());
+
+const storeProductItems: InventoryCatalogItem[] = [
+  {
+    id: "deshedding-brush",
+    name: "Deshedding brush",
+    section: "store-products",
     lowStockThreshold: 3,
-    storefrontProductId: product.id,
-  })),
+    storefrontProductId: "shed-brush",
+  },
+  {
+    id: "grooming-glove",
+    name: "Grooming glove",
+    section: "store-products",
+    lowStockThreshold: 3,
+    storefrontProductId: "shed-brush",
+  },
+  ...products
+    .filter((product) => product.id !== "shed-brush")
+    .filter((product) => !kitComponentIds.has(product.id))
+    .map((product) => ({
+      id: product.id,
+      name: product.name,
+      section: "store-products" as const,
+      lowStockThreshold: 3,
+      storefrontProductId: product.id,
+    })),
+];
+
+export const inventoryCatalog: InventoryCatalogItem[] = [
+  ...storeProductItems,
   {
     id: "treat-single-pack",
     name: "Single packaged dog treat",
@@ -69,4 +98,12 @@ export const inventoryCatalog: InventoryCatalogItem[] = [
 
 export function getInventoryCatalogItem(id: string) {
   return inventoryCatalog.find((item) => item.id === id);
+}
+
+export function getKitComponentIds(storefrontProductId: string) {
+  return kitAssemblies[storefrontProductId] ?? null;
+}
+
+export function isKitStorefrontProduct(productId: string) {
+  return Boolean(kitAssemblies[productId]);
 }

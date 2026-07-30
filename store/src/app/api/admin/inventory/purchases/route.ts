@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, verifyAdminSessionToken } from "@/lib/admin-auth";
 import { createInventoryPurchase } from "@/lib/orders";
-import { getInventoryCatalogItem, inventoryCatalog } from "@/lib/inventory-catalog";
+import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -10,42 +10,71 @@ async function requireAdmin() {
   return verifyAdminSessionToken(token);
 }
 
+type PurchaseBody = {
+  vendor?: string;
+  notes?: string;
+  items?: {
+    inventoryItemId?: string;
+    quantity?: number;
+    price?: number;
+  }[];
+};
+
 export async function POST(request: Request) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const form = await request.formData();
-  const vendor = String(form.get("vendor") ?? "Alibaba").trim() || "Alibaba";
-  const totalCostRaw = String(form.get("totalCost") ?? "").trim();
-  const notes = String(form.get("notes") ?? "").trim();
-
-  const totalCost = Number(totalCostRaw);
-  if (!Number.isFinite(totalCost) || totalCost < 0) {
-    return NextResponse.json({ error: "Invalid total cost" }, { status: 400 });
+  let body: PurchaseBody;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const items = inventoryCatalog
-    .map((item) => {
-      const raw = Number(form.get(`qty:${item.id}`) ?? 0);
-      return {
-        inventoryItemId: item.id,
-        quantity: raw,
-      };
-    })
-    .filter((item) => Number.isInteger(item.quantity) && item.quantity > 0)
-    .filter((item) => getInventoryCatalogItem(item.inventoryItemId));
+  const allowedVendors = new Set(["Alibaba", "Amazon", "Print shop"]);
+  const vendorRaw = String(body.vendor ?? "Alibaba").trim();
+  const vendor = allowedVendors.has(vendorRaw) ? vendorRaw : null;
+  if (!vendor) {
+    return NextResponse.json(
+      { error: "Vendor must be Alibaba, Amazon, or Print shop" },
+      { status: 400 },
+    );
+  }
+  const notes = String(body.notes ?? "").trim();
+
+  const items = (body.items ?? [])
+    .map((item) => ({
+      inventoryItemId: String(item.inventoryItemId ?? "").trim(),
+      quantity: Number(item.quantity),
+      price: Number(item.price),
+    }))
+    .filter(
+      (item) =>
+        getInventoryCatalogItem(item.inventoryItemId) &&
+        Number.isInteger(item.quantity) &&
+        item.quantity > 0 &&
+        Number.isFinite(item.price) &&
+        item.price >= 0,
+    )
+    .map((item) => ({
+      inventoryItemId: item.inventoryItemId,
+      quantity: item.quantity,
+      lineCostCents: Math.round(item.price * 100),
+    }));
 
   if (items.length === 0) {
     return NextResponse.json(
-      { error: "Add at least one item quantity to log a purchase" },
+      { error: "Add at least one item with quantity and price" },
       { status: 400 },
     );
   }
 
+  const totalCostCents = items.reduce((sum, item) => sum + item.lineCostCents, 0);
+
   await createInventoryPurchase({
     vendor,
-    totalCostCents: Math.round(totalCost * 100),
+    totalCostCents,
     notes: notes || null,
     items,
   });
@@ -54,7 +83,5 @@ export async function POST(request: Request) {
   revalidatePath("/admin/inventory");
   revalidatePath("/admin/inventory/purchases/new");
 
-  return NextResponse.redirect(new URL("/admin/inventory", request.url), {
-    status: 303,
-  });
+  return NextResponse.json({ ok: true });
 }
