@@ -27,13 +27,14 @@ export default async function AdminOrdersPage() {
               <th className="px-4 py-3 font-semibold">Total</th>
               <th className="px-4 py-3 font-semibold">Payment</th>
               <th className="px-4 py-3 font-semibold">Fulfillment</th>
+              <th className="px-4 py-3 font-semibold">Tracking</th>
               <th className="px-4 py-3 font-semibold">Returns</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[color:var(--admin-border)]">
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-[color:var(--admin-muted)]">
+                <td colSpan={7} className="px-4 py-8 text-[color:var(--admin-muted)]">
                   No orders yet.
                 </td>
               </tr>
@@ -59,6 +60,9 @@ export default async function AdminOrdersPage() {
                   <td className="px-4 py-3">{order.paymentStatus ?? "—"}</td>
                   <td className="px-4 py-3 capitalize">
                     {order.fulfillmentStatus}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-[color:var(--admin-muted)]">
+                    {order.trackingNumber || "—"}
                   </td>
                   <td className="px-4 py-3 capitalize">
                     {order.returnStatus === "none" ? "—" : order.returnStatus}

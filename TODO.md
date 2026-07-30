@@ -3,7 +3,7 @@
 ## Up next
 
 - [ ] Finalize inquiries on Alibaba and buy sample stock
-- [ ] Smoke-test checkout on https://shopnestpaw.com (success/cancel redirects)
+- [ ] Smoke-test checkout on [https://shopnestpaw.com](https://shopnestpaw.com) (success/cancel redirects)
 - [ ] Smoke-test `/admin` login, inventory editing, and order persistence from a test checkout
 
 ## Pre-launch polish
@@ -21,12 +21,16 @@
 - [ ] Turn on Stripe email receipts / Dashboard notifications
 - [ ] Verify Resend sender domain (so contact form can email beyond your account inbox)
 
+
+
 ## Launch week
 
 - [ ] One real $1–full-price test order to yourself, then refund
 - [ ] Soft-launch (friends/family or small ad) and fulfill manually via `/admin/orders`
 - [ ] Confirm analytics (Vercel Analytics) is showing useful data
 - [ ] Start generating marketing videos once the site is fully live
+
+
 
 ## Later
 
