@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
+import {
+  catalogItemTracksStock,
+  inventoryCatalog,
+} from "@/lib/inventory-catalog";
 import { formatPrice } from "@/lib/products";
 import {
-  getInventorySpendSummary,
+  getPurchaseSpendSummary,
   getRevenueSummary,
   listInventoryRows,
   listOrders,
@@ -13,14 +16,22 @@ function formatCents(cents: number) {
 }
 
 export default async function AdminOverviewPage() {
-  const [summary, inventorySpend, orders, inventoryRows] = await Promise.all([
+  const [summary, spend, orders, inventoryRows] = await Promise.all([
     getRevenueSummary(),
-    getInventorySpendSummary(),
+    getPurchaseSpendSummary(),
     listOrders(),
     listInventoryRows(),
   ]);
 
   const recent = orders.slice(0, 8);
+  const stockById = new Map(inventoryRows.map((row) => [row.productId, row.stock]));
+  const stockItems = inventoryCatalog
+    .filter((item) => catalogItemTracksStock(item))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      stock: stockById.get(item.id) ?? 0,
+    }));
 
   return (
     <div>
@@ -31,7 +42,7 @@ export default async function AdminOverviewPage() {
         Sales, fulfillment queue, and inventory at a glance.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
             Paid orders
@@ -61,14 +72,25 @@ export default async function AdminOverviewPage() {
             Inventory spend
           </p>
           <p className="mt-3 font-display text-3xl font-semibold">
-            {formatCents(inventorySpend.spendCents)}
+            {formatCents(spend.inventorySpendCents)}
           </p>
           <p className="mt-2 text-xs text-[color:var(--admin-muted)]">
-            {inventorySpend.purchaseCount === 0
-              ? "No purchase logs yet"
-              : `${inventorySpend.purchaseCount} purchase log${
-                  inventorySpend.purchaseCount === 1 ? "" : "s"
-                }`}
+            {spend.inventoryLineCount === 0
+              ? "No product inventory purchases yet"
+              : `Alibaba ${formatCents(spend.alibabaInventorySpendCents)} · products, treats, and print`}
+          </p>
+        </div>
+        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
+            Operations spend
+          </p>
+          <p className="mt-3 font-display text-3xl font-semibold">
+            {formatCents(spend.operationsSpendCents)}
+          </p>
+          <p className="mt-2 text-xs text-[color:var(--admin-muted)]">
+            {spend.operationsLineCount === 0
+              ? "No ops purchases yet"
+              : "Shipping supplies, equipment, ads, and tools"}
           </p>
         </div>
       </div>
@@ -127,30 +149,22 @@ export default async function AdminOverviewPage() {
             </Link>
           </div>
           <div className="mt-4 divide-y divide-[color:var(--admin-border)] border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
-            {inventoryRows.filter((row) => getInventoryCatalogItem(row.productId))
-              .length === 0 ? (
+            {stockItems.length === 0 ? (
               <p className="px-4 py-6 text-sm text-[color:var(--admin-muted)]">
                 No inventory items yet.
               </p>
             ) : (
-              inventoryRows
-                .filter((row) => getInventoryCatalogItem(row.productId))
-                .map((row) => {
-                  const item = getInventoryCatalogItem(row.productId);
-                  return (
-                    <div
-                      key={row.productId}
-                      className="flex items-center justify-between gap-4 px-4 py-3"
-                    >
-                      <p className="text-sm font-medium">
-                        {item?.name ?? row.productId}
-                      </p>
-                      <p className="text-sm text-[color:var(--admin-muted)]">
-                        {row.stock} in stock
-                      </p>
-                    </div>
-                  );
-                })
+              stockItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-4 px-4 py-3"
+                >
+                  <p className="text-sm font-medium">{item.name}</p>
+                  <p className="text-sm text-[color:var(--admin-muted)]">
+                    {item.stock} in stock
+                  </p>
+                </div>
+              ))
             )}
           </div>
         </section>

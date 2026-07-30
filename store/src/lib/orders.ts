@@ -16,6 +16,7 @@ import {
   newId,
   stableCustomerId,
 } from "@/lib/inventory";
+import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
 import type { LoggedOrder } from "@/lib/order-logger";
 
 export async function persistOrderFromStripe(order: LoggedOrder) {
@@ -281,18 +282,58 @@ export async function getRevenueSummary() {
   return { orderCount, revenueCents, averageOrderValueCents };
 }
 
-export async function getInventorySpendSummary() {
+export async function getPurchaseSpendSummary() {
   const db = getDb();
-  const [row] = await db
+  const [purchaseCountRow] = await db
     .select({
       purchaseCount: sql<number>`count(*)::int`,
-      spendCents: sql<number>`coalesce(sum(${inventoryPurchases.totalCostCents}), 0)::int`,
     })
     .from(inventoryPurchases);
 
+  const lines = await db
+    .select({
+      inventoryItemId: inventoryPurchaseItems.inventoryItemId,
+      lineCostCents: inventoryPurchaseItems.lineCostCents,
+      vendor: inventoryPurchases.vendor,
+    })
+    .from(inventoryPurchaseItems)
+    .innerJoin(
+      inventoryPurchases,
+      eq(inventoryPurchaseItems.purchaseId, inventoryPurchases.id),
+    );
+
+  let inventorySpendCents = 0;
+  let alibabaInventorySpendCents = 0;
+  let operationsSpendCents = 0;
+  let inventoryLineCount = 0;
+  let operationsLineCount = 0;
+
+  for (const line of lines) {
+    const catalogItem = getInventoryCatalogItem(line.inventoryItemId);
+    const section = catalogItem?.section;
+    const isOperations =
+      section === "shipping-supplies" || section === "business-ops";
+
+    if (isOperations) {
+      operationsSpendCents += line.lineCostCents;
+      operationsLineCount += 1;
+      continue;
+    }
+
+    inventorySpendCents += line.lineCostCents;
+    inventoryLineCount += 1;
+    if (line.vendor === "Alibaba") {
+      alibabaInventorySpendCents += line.lineCostCents;
+    }
+  }
+
   return {
-    purchaseCount: row?.purchaseCount ?? 0,
-    spendCents: row?.spendCents ?? 0,
+    purchaseCount: purchaseCountRow?.purchaseCount ?? 0,
+    inventorySpendCents,
+    alibabaInventorySpendCents,
+    inventoryLineCount,
+    operationsSpendCents,
+    operationsLineCount,
   };
 }
 
@@ -336,12 +377,20 @@ export async function createInventoryPurchase(input: {
 }
 
 export async function listRecentInventoryPurchases(limit = 10) {
+  return listInventoryPurchases(limit);
+}
+
+export async function listInventoryPurchases(limit?: number) {
   const db = getDb();
-  const purchases = await db
+  const purchaseQuery = db
     .select()
     .from(inventoryPurchases)
-    .orderBy(desc(inventoryPurchases.createdAt))
-    .limit(limit);
+    .orderBy(desc(inventoryPurchases.createdAt));
+
+  const purchases =
+    typeof limit === "number"
+      ? await purchaseQuery.limit(limit)
+      : await purchaseQuery;
 
   const items = await db
     .select()

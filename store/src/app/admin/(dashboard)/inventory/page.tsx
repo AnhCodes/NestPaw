@@ -1,12 +1,15 @@
 import Link from "next/link";
 import {
+  PurchaseLogsSection,
+  type PurchaseLogView,
+} from "@/components/purchase-logs-section";
+import {
   getKitComponentIds,
   inventoryCatalog,
   inventorySectionLabels,
   type InventorySection,
 } from "@/lib/inventory-catalog";
-import { listInventoryRows, listRecentInventoryPurchases } from "@/lib/orders";
-import { formatPrice } from "@/lib/products";
+import { listInventoryPurchases, listInventoryRows } from "@/lib/orders";
 
 function componentMin(
   storefrontProductId: string | undefined,
@@ -21,23 +24,15 @@ function componentMin(
   return Math.min(...components.map((id) => byId.get(id)?.[field] ?? 0));
 }
 
-function formatPurchaseDate(value: Date | string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
 export default async function AdminInventoryPage({
   searchParams,
 }: {
   searchParams: Promise<{ synced?: string }>;
 }) {
   const { synced } = await searchParams;
-  const [rows, recentPurchases] = await Promise.all([
+  const [rows, purchases] = await Promise.all([
     listInventoryRows(),
-    listRecentInventoryPurchases(8),
+    listInventoryPurchases(),
   ]);
   const byId = new Map(rows.map((row) => [row.productId, row]));
   const catalogById = new Map(inventoryCatalog.map((item) => [item.id, item]));
@@ -48,6 +43,27 @@ export default async function AdminInventoryPage({
     "shipping-supplies",
     "business-ops",
   ];
+
+  const purchaseViews: PurchaseLogView[] = purchases.map((purchase) => ({
+    id: purchase.id,
+    vendor: purchase.vendor,
+    totalCostCents: purchase.totalCostCents,
+    notes: purchase.notes,
+    createdAt: new Date(purchase.createdAt).toISOString(),
+    items: purchase.items.map((item) => {
+      const catalogItem = catalogById.get(item.inventoryItemId);
+      return {
+        id: item.id,
+        inventoryItemId: item.inventoryItemId,
+        name: catalogItem?.name ?? item.inventoryItemId,
+        quantity: item.quantity,
+        lineCostCents: item.lineCostCents,
+        sectionLabel: catalogItem
+          ? inventorySectionLabels[catalogItem.section]
+          : "Other",
+      };
+    }),
+  }));
 
   const storeProducts = inventoryCatalog.filter(
     (item) => item.section === "store-products",
@@ -119,61 +135,10 @@ export default async function AdminInventoryPage({
         </Link>
       </div>
 
-      <section className="mt-8">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">Recent purchase logs</h2>
-          <p className="text-xs uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
-            Products, supplies, and ops
-          </p>
-        </div>
-        <div className="mt-4 space-y-4">
-          {recentPurchases.length === 0 ? (
-            <div className="border border-dashed border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5 text-sm text-[color:var(--admin-muted)]">
-              No purchase logs yet.
-            </div>
-          ) : (
-            recentPurchases.map((purchase) => (
-              <article
-                key={purchase.id}
-                className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-[color:var(--admin-fg)]">
-                      {purchase.vendor}
-                    </p>
-                    <p className="text-xs text-[color:var(--admin-subtle)]">
-                      {formatPurchaseDate(purchase.createdAt)}
-                    </p>
-                  </div>
-                  <p className="text-sm font-semibold text-[color:var(--admin-fg)]">
-                    {formatPrice(purchase.totalCostCents / 100)}
-                  </p>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {purchase.items.map((item) => (
-                    <span
-                      key={item.id}
-                      className="border border-[color:var(--admin-border)] px-2 py-1 text-xs text-[color:var(--admin-muted)]"
-                    >
-                      {(catalogById.get(item.inventoryItemId)?.name ?? item.inventoryItemId) +
-                        ` x${item.quantity}` +
-                        (item.lineCostCents
-                          ? ` · ${formatPrice(item.lineCostCents / 100)}`
-                          : "")}
-                    </span>
-                  ))}
-                </div>
-                {purchase.notes ? (
-                  <p className="mt-4 text-sm text-[color:var(--admin-muted)]">
-                    {purchase.notes}
-                  </p>
-                ) : null}
-              </article>
-            ))
-          )}
-        </div>
-      </section>
+      <PurchaseLogsSection
+        purchases={purchaseViews}
+        sectionLabels={sections.map((section) => inventorySectionLabels[section])}
+      />
 
       <div className="mt-8 space-y-10">
         {sections.map((section) => {
