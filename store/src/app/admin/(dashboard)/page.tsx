@@ -2,6 +2,8 @@ import Link from "next/link";
 import {
   catalogItemTracksStock,
   inventoryCatalog,
+  inventorySectionLabels,
+  type InventorySection,
 } from "@/lib/inventory-catalog";
 import { formatPrice } from "@/lib/products";
 import {
@@ -25,13 +27,28 @@ export default async function AdminOverviewPage() {
 
   const recent = orders.slice(0, 8);
   const stockById = new Map(inventoryRows.map((row) => [row.productId, row.stock]));
-  const stockItems = inventoryCatalog
-    .filter((item) => catalogItemTracksStock(item))
-    .map((item) => ({
-      id: item.id,
-      name: item.name,
-      stock: stockById.get(item.id) ?? 0,
-    }));
+  const stockSections: InventorySection[] = [
+    "store-products",
+    "treats",
+    "printed-materials",
+    "shipping-supplies",
+    "business-ops",
+  ];
+  const stockBySection = stockSections
+    .map((section) => ({
+      section,
+      label: inventorySectionLabels[section],
+      items: inventoryCatalog
+        .filter(
+          (item) => item.section === section && catalogItemTracksStock(item),
+        )
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          stock: stockById.get(item.id) ?? 0,
+        })),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <div>
@@ -148,21 +165,35 @@ export default async function AdminOverviewPage() {
               Inventory →
             </Link>
           </div>
-          <div className="mt-4 divide-y divide-[color:var(--admin-border)] border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
-            {stockItems.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-[color:var(--admin-muted)]">
+          <div className="mt-4 space-y-4">
+            {stockBySection.length === 0 ? (
+              <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] px-4 py-6 text-sm text-[color:var(--admin-muted)]">
                 No inventory items yet.
-              </p>
+              </div>
             ) : (
-              stockItems.map((item) => (
+              stockBySection.map((group) => (
                 <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-4 px-4 py-3"
+                  key={group.section}
+                  className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)]"
                 >
-                  <p className="text-sm font-medium">{item.name}</p>
-                  <p className="text-sm text-[color:var(--admin-muted)]">
-                    {item.stock} in stock
-                  </p>
+                  <div className="border-b border-[color:var(--admin-border)] px-4 py-3">
+                    <h3 className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
+                      {group.label}
+                    </h3>
+                  </div>
+                  <div className="divide-y divide-[color:var(--admin-border)]">
+                    {group.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-4 px-4 py-3"
+                      >
+                        <p className="text-sm font-medium">{item.name}</p>
+                        <p className="text-sm text-[color:var(--admin-muted)]">
+                          {item.stock} in stock
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))
             )}
