@@ -25,7 +25,6 @@
 
 - [ ] One real $1–full-price test order to yourself, then refund
 - [ ] Soft-launch (friends/family or small ad) and fulfill manually via `/admin/orders`
-- [ ] Confirm analytics (Vercel Analytics) is showing useful data
 - [ ] Start generating marketing videos once the site is fully live
 
 ## Later
