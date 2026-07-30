@@ -5,7 +5,12 @@ import {
   verifyAdminSessionToken,
 } from "@/lib/admin-auth";
 import type { FulfillmentStatus, ReturnStatus } from "@/lib/db/schema";
-import { updateOrderFulfillment, updateOrderReturn } from "@/lib/orders";
+import { sendShippingNotification } from "@/lib/email";
+import {
+  getOrderById,
+  updateOrderFulfillment,
+  updateOrderReturn,
+} from "@/lib/orders";
 
 const statuses = new Set<FulfillmentStatus>([
   "unfulfilled",
@@ -39,6 +44,7 @@ export async function POST(
 
   const { orderId } = await context.params;
   const form = await request.formData();
+  const intent = String(form.get("intent") ?? "fulfillment");
   const fulfillmentStatus = String(form.get("fulfillmentStatus") ?? "");
   const trackingNumber = String(form.get("trackingNumber") ?? "").trim();
   const returnStatus = String(form.get("returnStatus") ?? "");
@@ -51,6 +57,11 @@ export async function POST(
     return NextResponse.json({ error: "Invalid return status" }, { status: 400 });
   }
 
+  const existing = await getOrderById(orderId);
+  if (!existing) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
   await Promise.all([
     updateOrderFulfillment(
       orderId,
@@ -60,7 +71,35 @@ export async function POST(
     updateOrderReturn(orderId, returnStatus as ReturnStatus, returnNotes || null),
   ]);
 
-  return NextResponse.redirect(new URL(`/admin/orders/${orderId}`, request.url), {
+  const redirectUrl = new URL(`/admin/orders/${orderId}`, request.url);
+
+  if (intent === "fulfillment") {
+    const notify = await sendShippingNotification({
+      to: existing.customer.email,
+      customerName: existing.order.shippingName || existing.customer.name,
+      orderId,
+      trackingNumber,
+      previousStatus: existing.order.fulfillmentStatus,
+      previousTracking: existing.order.trackingNumber,
+      fulfillmentStatus,
+    });
+
+    if (notify.status === "sent") {
+      redirectUrl.searchParams.set("shippedEmail", "sent");
+    } else if (notify.status === "error") {
+      redirectUrl.searchParams.set("shippedEmail", "error");
+    } else if (notify.reason === "missing_tracking" && fulfillmentStatus === "shipped") {
+      redirectUrl.searchParams.set("shippedEmail", "needs_tracking");
+    } else if (notify.reason === "unchanged") {
+      redirectUrl.searchParams.set("shippedEmail", "unchanged");
+    } else {
+      redirectUrl.searchParams.set("shippedEmail", "saved");
+    }
+  } else {
+    redirectUrl.searchParams.set("returnSaved", "1");
+  }
+
+  return NextResponse.redirect(redirectUrl, {
     status: 303,
   });
 }

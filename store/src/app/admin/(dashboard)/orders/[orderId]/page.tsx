@@ -26,17 +26,53 @@ const returnStatuses: ReturnStatus[] = [
   "closed",
 ];
 
+function shippedEmailMessage(value: string | undefined) {
+  switch (value) {
+    case "sent":
+      return {
+        tone: "ok" as const,
+        text: "Fulfillment saved. Shipping email sent to the customer.",
+      };
+    case "error":
+      return {
+        tone: "warn" as const,
+        text: "Fulfillment saved, but the shipping email failed to send. Check RESEND_API_KEY / CONTACT_FROM_EMAIL.",
+      };
+    case "needs_tracking":
+      return {
+        tone: "warn" as const,
+        text: "Marked as shipped, but no tracking number was added, so no customer email was sent.",
+      };
+    case "unchanged":
+      return {
+        tone: "ok" as const,
+        text: "Fulfillment saved. Shipping email was already sent for this tracking number.",
+      };
+    case "saved":
+      return {
+        tone: "ok" as const,
+        text: "Fulfillment saved.",
+      };
+    default:
+      return null;
+  }
+}
+
 export default async function AdminOrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orderId: string }>;
+  searchParams: Promise<{ shippedEmail?: string; returnSaved?: string }>;
 }) {
   const { orderId } = await params;
+  const query = await searchParams;
   const data = await getOrderById(orderId);
   if (!data) notFound();
 
   const { order, customer, items } = data;
   const address = order.shippingAddress as Record<string, string> | null;
+  const shippedNotice = shippedEmailMessage(query.shippedEmail);
 
   return (
     <div>
@@ -50,6 +86,23 @@ export default async function AdminOrderDetailPage({
         Order
       </h1>
       <p className="mt-2 break-all text-sm text-[color:var(--admin-muted)]">{order.id}</p>
+
+      {shippedNotice ? (
+        <p
+          className={`mt-6 border px-4 py-3 text-sm ${
+            shippedNotice.tone === "warn"
+              ? "border-[color:var(--admin-warning-fg)]/30 bg-[color:var(--admin-warning-fg)]/10 text-[color:var(--admin-warning-fg)]"
+              : "border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 text-[color:var(--admin-fg)]"
+          }`}
+        >
+          {shippedNotice.text}
+        </p>
+      ) : null}
+      {query.returnSaved === "1" ? (
+        <p className="mt-6 border border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 px-4 py-3 text-sm text-[color:var(--admin-fg)]">
+          Return status saved.
+        </p>
+      ) : null}
 
       <div className="mt-8 grid gap-8 xl:grid-cols-3">
         <section className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6">
@@ -101,6 +154,7 @@ export default async function AdminOrderDetailPage({
             method="post"
             className="mt-4 space-y-4"
           >
+            <input type="hidden" name="intent" value="fulfillment" />
             <input type="hidden" name="returnStatus" value={order.returnStatus} />
             <input type="hidden" name="returnNotes" value={order.returnNotes ?? ""} />
             <label className="block text-sm text-[color:var(--admin-fg)]">
@@ -123,9 +177,13 @@ export default async function AdminOrderDetailPage({
                 name="trackingNumber"
                 defaultValue={order.trackingNumber ?? ""}
                 className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] placeholder:text-[color:var(--admin-subtle)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
-                placeholder="Optional"
+                placeholder="Required to email tracking"
               />
             </label>
+            <p className="text-xs text-[color:var(--admin-subtle)]">
+              Setting status to shipped with a tracking number emails the customer
+              a USPS tracking link.
+            </p>
             <button type="submit" className="btn-primary">
               Save fulfillment
             </button>
@@ -149,6 +207,7 @@ export default async function AdminOrderDetailPage({
             method="post"
             className="mt-4 space-y-4"
           >
+            <input type="hidden" name="intent" value="return" />
             <input type="hidden" name="fulfillmentStatus" value={order.fulfillmentStatus} />
             <input type="hidden" name="trackingNumber" value={order.trackingNumber ?? ""} />
             <label className="block text-sm text-[color:var(--admin-fg)]">

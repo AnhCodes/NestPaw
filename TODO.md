@@ -19,9 +19,7 @@
 - [ ] Decide week-1 fulfillment path (self-ship vs 3PL) and write a pack/ship checklist
 - [ ] Set up packing supplies + return address label
 - [ ] Turn on Stripe email receipts / Dashboard notifications
-- [ ] Verify Resend sender domain (so contact form can email beyond your account inbox)
-
-
+- [ ] Smoke-test Resend from verified domain (contact form + shipping email on a test order)
 
 ## Launch week
 
@@ -30,9 +28,8 @@
 - [ ] Confirm analytics (Vercel Analytics) is showing useful data
 - [ ] Start generating marketing videos once the site is fully live
 
-
-
 ## Later
 
 - [ ] Improve broader SEO after first sales data
 - [ ] Reorder winners in bulk once samples convert
+  
