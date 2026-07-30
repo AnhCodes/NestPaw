@@ -187,6 +187,18 @@ export async function syncStockToStorefront() {
 export async function incrementAdminStock(
   items: { inventoryItemId: string; quantity: number }[],
 ) {
+  await applyAdminStockDeltas(
+    items.map((item) => ({
+      inventoryItemId: item.inventoryItemId,
+      delta: item.quantity,
+    })),
+  );
+}
+
+/** Apply positive or negative admin stock deltas for purchase create/edit. */
+export async function applyAdminStockDeltas(
+  items: { inventoryItemId: string; delta: number }[],
+) {
   const db = getDb();
   const now = new Date();
 
@@ -194,25 +206,36 @@ export async function incrementAdminStock(
     const catalogItem = inventoryCatalog.find(
       (row) => row.id === item.inventoryItemId,
     );
-    if (!catalogItem || item.quantity <= 0) continue;
+    if (!catalogItem || item.delta === 0) continue;
     if (catalogItem.tracksStock === false) continue;
 
+    if (item.delta > 0) {
+      await db
+        .insert(inventory)
+        .values({
+          productId: item.inventoryItemId,
+          stock: item.delta,
+          storefrontStock: 0,
+          lowStockThreshold: catalogItem.lowStockThreshold,
+          updatedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: inventory.productId,
+          set: {
+            stock: sql`${inventory.stock} + ${item.delta}`,
+            updatedAt: now,
+          },
+        });
+      continue;
+    }
+
     await db
-      .insert(inventory)
-      .values({
-        productId: item.inventoryItemId,
-        stock: item.quantity,
-        storefrontStock: 0,
-        lowStockThreshold: catalogItem.lowStockThreshold,
+      .update(inventory)
+      .set({
+        stock: sql`GREATEST(0, ${inventory.stock} + ${item.delta})`,
         updatedAt: now,
       })
-      .onConflictDoUpdate({
-        target: inventory.productId,
-        set: {
-          stock: sql`${inventory.stock} + ${item.quantity}`,
-          updatedAt: now,
-        },
-      });
+      .where(eq(inventory.productId, item.inventoryItemId));
   }
 }
 

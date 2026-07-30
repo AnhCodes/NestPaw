@@ -11,6 +11,7 @@ import {
   type ReturnStatus,
 } from "@/lib/db/schema";
 import {
+  applyAdminStockDeltas,
   decrementStockForItems,
   incrementAdminStock,
   newId,
@@ -371,6 +372,88 @@ export async function createInventoryPurchase(input: {
       })),
     );
     await incrementAdminStock(input.items);
+  }
+
+  return purchaseId;
+}
+
+export async function getInventoryPurchaseById(purchaseId: string) {
+  const db = getDb();
+  const [purchase] = await db
+    .select()
+    .from(inventoryPurchases)
+    .where(eq(inventoryPurchases.id, purchaseId))
+    .limit(1);
+  if (!purchase) return null;
+
+  const items = await db
+    .select()
+    .from(inventoryPurchaseItems)
+    .where(eq(inventoryPurchaseItems.purchaseId, purchaseId))
+    .orderBy(asc(inventoryPurchaseItems.inventoryItemId));
+
+  return { ...purchase, items };
+}
+
+export async function updateInventoryPurchase(
+  purchaseId: string,
+  input: {
+    vendor: string;
+    totalCostCents: number;
+    notes?: string | null;
+    items: { inventoryItemId: string; quantity: number; lineCostCents: number }[];
+  },
+) {
+  const existing = await getInventoryPurchaseById(purchaseId);
+  if (!existing) {
+    throw new Error("Purchase not found");
+  }
+
+  const deltas = new Map<string, number>();
+  for (const item of existing.items) {
+    deltas.set(
+      item.inventoryItemId,
+      (deltas.get(item.inventoryItemId) ?? 0) - item.quantity,
+    );
+  }
+  for (const item of input.items) {
+    deltas.set(
+      item.inventoryItemId,
+      (deltas.get(item.inventoryItemId) ?? 0) + item.quantity,
+    );
+  }
+
+  await applyAdminStockDeltas(
+    [...deltas.entries()].map(([inventoryItemId, delta]) => ({
+      inventoryItemId,
+      delta,
+    })),
+  );
+
+  const db = getDb();
+  await db
+    .update(inventoryPurchases)
+    .set({
+      vendor: input.vendor,
+      totalCostCents: input.totalCostCents,
+      notes: input.notes ?? null,
+    })
+    .where(eq(inventoryPurchases.id, purchaseId));
+
+  await db
+    .delete(inventoryPurchaseItems)
+    .where(eq(inventoryPurchaseItems.purchaseId, purchaseId));
+
+  if (input.items.length > 0) {
+    await db.insert(inventoryPurchaseItems).values(
+      input.items.map((item) => ({
+        id: newId("poi"),
+        purchaseId,
+        inventoryItemId: item.inventoryItemId,
+        quantity: item.quantity,
+        lineCostCents: item.lineCostCents,
+      })),
+    );
   }
 
   return purchaseId;

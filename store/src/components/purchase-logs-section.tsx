@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/products";
 
@@ -95,9 +96,17 @@ function PurchaseCard({ purchase }: { purchase: PurchaseLogView }) {
             {formatPurchaseDate(purchase.createdAt)}
           </p>
         </div>
-        <p className="text-sm font-semibold text-[color:var(--admin-fg)]">
-          {formatPrice(purchase.totalCostCents / 100)}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-semibold text-[color:var(--admin-fg)]">
+            {formatPrice(purchase.totalCostCents / 100)}
+          </p>
+          <Link
+            href={`/admin/inventory/purchases/${purchase.id}`}
+            className="border border-[color:var(--admin-border)] px-2.5 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
+          >
+            Edit
+          </Link>
+        </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {purchase.items.map((item) => (

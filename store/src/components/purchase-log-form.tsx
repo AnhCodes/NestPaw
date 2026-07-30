@@ -17,6 +17,17 @@ type PurchaseLine = {
   price: string;
 };
 
+export type PurchaseLogFormInitial = {
+  purchaseId: string;
+  vendor: string;
+  notes: string;
+  items: {
+    inventoryItemId: string;
+    quantity: number;
+    lineCostCents: number;
+  }[];
+};
+
 const sections: InventorySection[] = [
   "store-products",
   "treats",
@@ -37,17 +48,40 @@ function newLine(): PurchaseLine {
   };
 }
 
-export function PurchaseLogForm() {
-  const [vendor, setVendor] = useState<Vendor>("Amazon");
-  const [notes, setNotes] = useState("");
-  const [lines, setLines] = useState<PurchaseLine[]>([newLine()]);
+function toVendor(value: string): Vendor {
+  return vendors.includes(value as Vendor) ? (value as Vendor) : "Other";
+}
+
+function linesFromInitial(initial?: PurchaseLogFormInitial): PurchaseLine[] {
+  if (!initial || initial.items.length === 0) return [newLine()];
+  return initial.items.map((item, index) => ({
+    key: `existing-${index}-${item.inventoryItemId}`,
+    inventoryItemId: item.inventoryItemId,
+    quantity: String(item.quantity),
+    price: (item.lineCostCents / 100).toFixed(2),
+  }));
+}
+
+export function PurchaseLogForm({
+  initial,
+}: {
+  initial?: PurchaseLogFormInitial;
+}) {
+  const isEdit = Boolean(initial?.purchaseId);
+  const [vendor, setVendor] = useState<Vendor>(
+    toVendor(initial?.vendor ?? "Amazon"),
+  );
+  const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [lines, setLines] = useState<PurchaseLine[]>(() =>
+    linesFromInitial(initial),
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const total = useMemo(() => {
     return lines.reduce((sum, line) => {
       const price = Number(line.price);
-      return sum + (Number.isFinite(price) && price > 0 ? price : 0);
+      return sum + (Number.isFinite(price) && price >= 0 ? price : 0);
     }, 0);
   }, [lines]);
 
@@ -84,8 +118,11 @@ export function PurchaseLogForm() {
     }
 
     try {
-      const res = await fetch("/api/admin/inventory/purchases", {
-        method: "POST",
+      const url = isEdit
+        ? `/api/admin/inventory/purchases/${initial!.purchaseId}`
+        : "/api/admin/inventory/purchases";
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           vendor,
@@ -151,9 +188,9 @@ export function PurchaseLogForm() {
           <div>
             <h2 className="font-display text-2xl font-semibold">Items</h2>
             <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
-              Log product stock, shipping supplies, or business buys like a label
-              printer. Expense-only items count toward spend without changing
-              warehouse stock.
+              {isEdit
+                ? "Fix quantities, prices, or items. Admin stock will adjust to match the corrected log."
+                : "Log product stock, shipping supplies, or business buys like a label printer. Expense-only items count toward spend without changing warehouse stock."}
             </p>
           </div>
           <button
@@ -274,7 +311,11 @@ export function PurchaseLogForm() {
 
       <div className="flex flex-wrap gap-3">
         <button type="submit" disabled={submitting} className="btn-primary">
-          {submitting ? "Saving..." : "Save purchase log"}
+          {submitting
+            ? "Saving..."
+            : isEdit
+              ? "Save changes"
+              : "Save purchase log"}
         </button>
         <Link
           href="/admin/inventory"
