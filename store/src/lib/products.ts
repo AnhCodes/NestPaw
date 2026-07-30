@@ -79,7 +79,6 @@ export const products: Product[] = [
     ],
     includes: [
       "Snuffle mat",
-      "Storage strap",
       "Dog calm tips card",
     ],
     shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
