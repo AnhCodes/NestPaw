@@ -80,6 +80,7 @@ export async function seedInventory() {
   const db = getDb();
   const now = new Date();
   for (const item of inventoryCatalog) {
+    if (item.tracksStock === false) continue;
     await db
       .insert(inventory)
       .values({
@@ -194,6 +195,7 @@ export async function incrementAdminStock(
       (row) => row.id === item.inventoryItemId,
     );
     if (!catalogItem || item.quantity <= 0) continue;
+    if (catalogItem.tracksStock === false) continue;
 
     await db
       .insert(inventory)

@@ -4,7 +4,8 @@ export type InventorySection =
   | "store-products"
   | "treats"
   | "printed-materials"
-  | "shipping-supplies";
+  | "shipping-supplies"
+  | "business-ops";
 
 export type InventoryCatalogItem = {
   id: string;
@@ -13,6 +14,11 @@ export type InventoryCatalogItem = {
   lowStockThreshold: number;
   /** Sold storefront product this warehouse item belongs to (kits can share one). */
   storefrontProductId?: string;
+  /**
+   * When false, purchase logs count toward spend only and do not change admin stock.
+   * Use for one-off tools, ads, software, and other business expenses.
+   */
+  tracksStock?: boolean;
 };
 
 export const inventorySectionLabels: Record<InventorySection, string> = {
@@ -20,6 +26,7 @@ export const inventorySectionLabels: Record<InventorySection, string> = {
   treats: "Dog treats",
   "printed-materials": "Printed materials",
   "shipping-supplies": "Shipping supplies",
+  "business-ops": "Business & equipment",
 };
 
 /** Storefront kits assembled from multiple warehouse items. */
@@ -94,7 +101,62 @@ export const inventoryCatalog: InventoryCatalogItem[] = [
     section: "shipping-supplies",
     lowStockThreshold: 20,
   },
+  {
+    id: "poly-mailers",
+    name: "Poly mailers",
+    section: "shipping-supplies",
+    lowStockThreshold: 25,
+  },
+  {
+    id: "label-printer",
+    name: "Label printer",
+    section: "business-ops",
+    lowStockThreshold: 0,
+  },
+  {
+    id: "thermal-shipping-labels",
+    name: "Thermal shipping labels",
+    section: "business-ops",
+    lowStockThreshold: 1,
+  },
+  {
+    id: "shipping-scale",
+    name: "Shipping scale",
+    section: "business-ops",
+    lowStockThreshold: 0,
+  },
+  {
+    id: "office-supplies",
+    name: "Office / packing desk supplies",
+    section: "business-ops",
+    lowStockThreshold: 1,
+  },
+  {
+    id: "marketing-ads",
+    name: "Marketing / ads spend",
+    section: "business-ops",
+    lowStockThreshold: 0,
+    tracksStock: false,
+  },
+  {
+    id: "software-tools",
+    name: "Software / tools subscription",
+    section: "business-ops",
+    lowStockThreshold: 0,
+    tracksStock: false,
+  },
+  {
+    id: "other-business-purchase",
+    name: "Other business purchase",
+    section: "business-ops",
+    lowStockThreshold: 0,
+    tracksStock: false,
+  },
 ];
+
+export function catalogItemTracksStock(item: InventoryCatalogItem) {
+  return item.tracksStock !== false;
+}
 
 export function getInventoryCatalogItem(id: string) {
   return inventoryCatalog.find((item) => item.id === id);

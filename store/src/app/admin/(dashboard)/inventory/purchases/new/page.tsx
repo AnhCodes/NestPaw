@@ -13,9 +13,11 @@ export default function NewInventoryPurchasePage() {
       <h1 className="mt-4 font-display text-4xl font-semibold tracking-[-0.04em]">
         Log purchase
       </h1>
-      <p className="mt-2 text-[color:var(--admin-muted)]">
-        Add each item you bought with quantity and price. Admin stock increases
-        automatically; storefront stock stays unchanged until you sync.
+      <p className="mt-2 max-w-2xl text-[color:var(--admin-muted)]">
+        Record product stock, packing supplies, and business buys (Amazon label
+        printer, ads, software, and similar). Stocked items increase admin
+        inventory; expense-only items are tracked for spend without changing
+        warehouse counts.
       </p>
 
       <PurchaseLogForm />

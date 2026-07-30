@@ -32,12 +32,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const allowedVendors = new Set(["Alibaba", "Amazon", "Print shop"]);
-  const vendorRaw = String(body.vendor ?? "Alibaba").trim();
+  const allowedVendors = new Set(["Alibaba", "Amazon", "Print shop", "Other"]);
+  const vendorRaw = String(body.vendor ?? "Amazon").trim();
   const vendor = allowedVendors.has(vendorRaw) ? vendorRaw : null;
   if (!vendor) {
     return NextResponse.json(
-      { error: "Vendor must be Alibaba, Amazon, or Print shop" },
+      { error: "Vendor must be Alibaba, Amazon, Print shop, or Other" },
       { status: 400 },
     );
   }

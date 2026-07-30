@@ -46,6 +46,7 @@ export default async function AdminInventoryPage({
     "treats",
     "printed-materials",
     "shipping-supplies",
+    "business-ops",
   ];
 
   const storeProducts = inventoryCatalog.filter(
@@ -108,8 +109,9 @@ export default async function AdminInventoryPage({
         <div>
           <p className="font-medium text-[color:var(--admin-fg)]">Purchase logs</p>
           <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
-            Save what you ordered, total spend, and quantities by item. Admin stock
-            increases automatically.
+            Log product stock, packing supplies, and business buys like a label
+            printer. Stocked items raise admin inventory; expense-only items count
+            toward spend only.
           </p>
         </div>
         <Link href="/admin/inventory/purchases/new" className="btn-primary">
@@ -121,7 +123,7 @@ export default async function AdminInventoryPage({
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">Recent purchase logs</h2>
           <p className="text-xs uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
-            Alibaba and suppliers
+            Products, supplies, and ops
           </p>
         </div>
         <div className="mt-4 space-y-4">
@@ -175,7 +177,10 @@ export default async function AdminInventoryPage({
 
       <div className="mt-8 space-y-10">
         {sections.map((section) => {
-          const items = inventoryCatalog.filter((item) => item.section === section);
+          const items = inventoryCatalog.filter(
+            (item) => item.section === section && item.tracksStock !== false,
+          );
+          if (items.length === 0) return null;
 
           return (
             <section key={section}>
@@ -198,7 +203,7 @@ export default async function AdminInventoryPage({
                     ? componentMin(item.storefrontProductId, byId, "stock")
                     : stock;
                   const threshold = row?.lowStockThreshold ?? item.lowStockThreshold;
-                  const low = stock <= threshold;
+                  const low = threshold > 0 && stock <= threshold;
                   const outOfSync =
                     item.section === "store-products" &&
                     (stock !== storefrontStock ||
