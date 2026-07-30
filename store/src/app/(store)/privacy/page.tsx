@@ -18,8 +18,8 @@ export default function PrivacyPage() {
       <div className="mt-8 space-y-5 text-ink/75">
         <p>
           NestPaw collects information you provide at checkout and through
-          contact forms — such as name, email, shipping address, and order
-          details — to fulfill orders and respond to support requests.
+          contact forms, such as name, email, shipping address, and order
+          details, to fulfill orders and respond to support requests.
         </p>
         <p>
           We may use trusted processors for payments, shipping, analytics, and

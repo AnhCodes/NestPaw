@@ -12,7 +12,7 @@ export function SiteFooter() {
             markClassName="h-10 w-10 md:h-11 md:w-11"
           />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-mist/65">
-            Products that help your dog feel calm and comfortable — and make
+            Products that help your dog feel calm and comfortable, and make
             home life easier for you.
           </p>
         </div>

@@ -120,7 +120,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           <p className="mt-4 text-sm text-ink/50">
             {product.stock > 0
               ? product.shippingNote
-              : "Currently 0 in stock — samples are being ordered. Check back soon."}
+              : "Currently 0 in stock. Samples are being ordered, so check back soon."}
           </p>
 
           <div className="mt-10 border-t border-line pt-8">
@@ -172,7 +172,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               <div>
                 <p className="font-semibold text-ink">How long does shipping take?</p>
                 <p className="mt-1">
-                  Most U.S. orders arrive in about 5–8 business days. We ship
+                  Most U.S. orders arrive in about 5 to 8 business days. We ship
                   within 24 hours of ordering when stock is available.
                 </p>
               </div>
@@ -188,7 +188,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                   Will my item match the photo exactly?
                 </p>
                 <p className="mt-1">
-                  Yes in style and function — it&apos;s the same product. Color
+                  Yes in style and function. It&apos;s the same product. Color
                   may differ from the photos based on available stock.
                 </p>
               </div>
@@ -198,7 +198,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 </p>
                 <p className="mt-1">
                   No. NestPaw products are comfort and enrichment tools for home
-                  life — not veterinary treatments.
+                  life, not veterinary treatments.
                 </p>
               </div>
             </div>

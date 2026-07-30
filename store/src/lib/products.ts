@@ -47,7 +47,7 @@ export const products: Product[] = [
     benefits: [
       "Cuts down loose fur before it hits furniture",
       "Gentle enough for weekly home use",
-      "Demo-friendly — results you can see in one session",
+      "Demo-friendly, with results you can see in one session",
     ],
     includes: [
       "Deshedding brush",
@@ -55,7 +55,7 @@ export const products: Product[] = [
       "Dog calm tips card",
       "Single packaged dog treat",
     ],
-    shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
+    shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
     featured: true,
     badge: "Best seller",
   },
@@ -84,7 +84,7 @@ export const products: Product[] = [
       "Dog calm tips card",
       "Single packaged dog treat",
     ],
-    shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
+    shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
     featured: true,
   },
   {
@@ -111,7 +111,7 @@ export const products: Product[] = [
       "Dog calm tips card",
       "Single packaged dog treat",
     ],
-    shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
+    shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
     featured: true,
   },
   {
@@ -139,7 +139,7 @@ export const products: Product[] = [
       "Dog calm tips card",
       "Single packaged dog treat",
     ],
-    shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
+    shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
     featured: true,
   },
   {
@@ -164,7 +164,7 @@ export const products: Product[] = [
       "Dog calm tips card",
       "Single packaged dog treat",
     ],
-    shippingNote: "Ships within 24 hours · typically arrives in 5–8 business days",
+    shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
   },
 ];
 

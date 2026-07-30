@@ -1,7 +1,7 @@
 export const siteName = "NestPaw";
 
 export const siteDescription =
-  "Premium dog comfort and home-ease accessories. Calm enrichment and grooming essentials for dogs at home — U.S. shipping.";
+  "Premium dog comfort and home-ease accessories. Calm enrichment and grooming essentials for dogs at home, with U.S. shipping.";
 
 function normalizeSiteUrl(url: string | undefined) {
   return url?.replace(/\/$/, "") || "";

@@ -22,7 +22,7 @@ export default function ShippingPage() {
         <p>
           Free shipping on U.S. orders over $40. Orders under $40 ship for a
           flat $4.95. We typically dispatch within 24 hours when items are in
-          stock. Most deliveries arrive in 5–8 business days depending on
+          stock. Most deliveries arrive in 5 to 8 business days depending on
           destination and carrier.
         </p>
         <p>

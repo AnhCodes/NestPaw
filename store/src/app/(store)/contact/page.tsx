@@ -103,7 +103,7 @@ export default function ContactPage() {
           <h2 className="font-display text-2xl text-ink">Send us a message</h2>
           {contactSent ? (
             <p className="mt-6 border border-moss/15 bg-stone/70 p-6 text-ink/80">
-              Thanks — your message was sent. We&apos;ll reply to the email you
+              Thanks, your message was sent. We&apos;ll reply to the email you
               provided within one business day.
             </p>
           ) : (

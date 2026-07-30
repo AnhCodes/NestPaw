@@ -8,8 +8,8 @@ const marqueeItems = [
   "Ships within 24 hours",
   "30-day returns",
   "Calm\u00a0·\u00a0Groom\u00a0·\u00a0Enrichment",
-  "U.S. delivery 5–8 days",
-  "No medical claims — just better home routines",
+  "U.S. delivery in 5 to 8 days",
+  "No medical claims, just better home routines",
 ];
 
 export default async function HomePage() {
@@ -39,7 +39,7 @@ export default async function HomePage() {
               Calm comfort for dogs at home
             </h1>
             <p className="animate-rise delay-2 mt-4 max-w-md text-base leading-relaxed text-mist/80 md:text-lg">
-              Products that help your dog feel settled — and make everyday home
+              Products that help your dog feel settled, and make everyday home
               life easier for you.
             </p>
           </div>
@@ -68,7 +68,7 @@ export default async function HomePage() {
             </h2>
           </div>
           <p className="text-base leading-relaxed text-ink-soft md:text-lg">
-            A tight Core 4 — enrichment and grooming tools, not another endless
+            A tight Core 4: enrichment and grooming tools, not another endless
             pet aisle. Each piece solves a real home friction: shedding,
             restless energy, and rushed mealtimes.
           </p>
@@ -132,12 +132,13 @@ export default async function HomePage() {
               Our promise
             </p>
             <h2 className="mt-4 font-display text-3xl font-semibold leading-[1.05] text-ink md:text-5xl">
-              Practical calm, not pet-store noise
+              Because your dog deserves a softer day
             </h2>
             <p className="mt-5 text-base leading-relaxed text-ink-soft md:text-lg">
-              Free shipping over&nbsp;$40. Honest delivery windows. A 30-day return
-              window on unused or defective items. No medical claims — just tools
-              that make home life with your dog feel smoother.
+              We care about the quiet moments between walks: a calmer meal, a
+              gentler groom, a little less stress for both of you. NestPaw exists
+              to help you take better care of the dog who already takes care of
+              your heart.
             </p>
             <Link href="/about" className="btn-primary mt-8 w-fit">
               Read our story

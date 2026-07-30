@@ -38,7 +38,7 @@ export default async function ShopPage({
             The collection
           </h1>
           <p className="mt-4 text-base text-ink-soft md:text-lg">
-            Calm enrichment and groom tools that keep home life easier — free
+            Calm enrichment and groom tools that keep home life easier, with free
             shipping over&nbsp;$40.
           </p>
         </div>

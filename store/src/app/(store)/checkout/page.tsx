@@ -84,7 +84,7 @@ export default function CheckoutPage() {
       {!allInStock ? (
         <p className="mt-6 border border-line bg-stone px-4 py-3 text-sm text-ink/70">
           One or more items are out of stock. Remove them from your cart before
-          paying — inventory updates when wholesale stock arrives.
+          paying. Inventory updates when wholesale stock arrives.
         </p>
       ) : null}
 
