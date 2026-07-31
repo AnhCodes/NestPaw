@@ -38,9 +38,9 @@ export const products: Product[] = [
     price: 24,
     stock: 0,
     category: "groom",
-    image: "/products/nestpaw-shedding-brush-kit-fill.png",
+    image: "/products/nestpaw-shedding-brush-kit-fill-v3.png",
     gallery: [
-      "/products/nestpaw-shedding-brush-kit-fill.png",
+      "/products/nestpaw-shedding-brush-kit-fill-v3.png",
       "/products/nestpaw-shedding-brush-gallery-v2.png",
       "/products/nestpaw-shedding-glove-gallery-v2.png",
     ],
