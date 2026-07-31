@@ -42,7 +42,7 @@ export const products: Product[] = [
     gallery: [
       "/products/nestpaw-shedding-brush-kit-fill-v3.png",
       "/products/nestpaw-shedding-brush-gallery-v2.png",
-      "/products/nestpaw-shedding-glove-gallery-v2.png",
+      "/products/nestpaw-shedding-glove-gallery-v3.png",
     ],
     benefits: [
       "Cuts down loose fur before it hits furniture",
