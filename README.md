@@ -16,6 +16,7 @@ NestPaw/
 ├── README.md
 ├── TODO.md                           # Active launch checklist
 ├── business/
+│   ├── PACK-SHIP.md                  # Per-order pack → Pirate Ship → USPS → admin
 │   ├── nestpaw-product-catalog.pdf   # Sell prices, Alibaba costs, suppliers, links
 │   └── generate-catalog.py
 └── store/                            # Next.js storefront + /admin
@@ -58,15 +59,20 @@ NestPaw/
 4. The order appears in `/admin/orders` as **unfulfilled**.
 
 ### 4. Pack and ship
+
+Follow **[PACK-SHIP.md](business/PACK-SHIP.md)** for the full checklist. Short version:
+
 1. Open the order in `/admin/orders/[id]`.
-2. Pack the product(s), tips card, and ship via USPS (for example through Pirate Ship).
+2. Pack the product(s), tips card, and ship via USPS Ground Advantage through Pirate Ship.
 3. Aim for all-in postage near the $4.95 flat rate on single orders, funded by margin on free-shipping carts.
+4. In admin, set fulfillment to **shipped** and paste the tracking number (triggers the customer email).
 
 ### 5. Notify and deliver
-1. In admin, set fulfillment to **shipped** and paste the tracking number.
-2. NestPaw automatically emails the customer from `hello@shopnestpaw.com` with tracking and a USPS link.
-3. Most U.S. deliveries arrive in about 5 to 8 business days.
-4. Returns / issues come through the Contact page and are handled in admin + Stripe.
+
+1. NestPaw emails the customer from `hello@shopnestpaw.com` with tracking and a USPS link.
+2. Most U.S. deliveries arrive in about 5 to 8 business days.
+3. Returns / issues come through the Contact page and are handled in admin + Stripe.
+
 
 ```text
 Alibaba → Receive & QA → Admin stock → Sync storefront
