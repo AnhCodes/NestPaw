@@ -11,7 +11,6 @@ import {
 
 export default function CheckoutPage() {
   const { lines, subtotal, hydrated, items } = useCart();
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +33,6 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email || undefined,
           items: items.map((i) => ({
             productId: i.productId,
             quantity: i.quantity,
@@ -90,20 +88,6 @@ export default function CheckoutPage() {
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
         <form onSubmit={onSubmit} className="space-y-6">
-          <fieldset className="space-y-4">
-            <legend className="font-display text-2xl font-semibold text-ink">
-              Contact
-            </legend>
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email (optional)"
-              className="w-full border border-line bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-accent/30"
-            />
-          </fieldset>
-
           {error ? (
             <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {error}

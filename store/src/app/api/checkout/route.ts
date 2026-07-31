@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { items?: CartLine[]; email?: string };
+  let body: { items?: CartLine[] };
   try {
     body = await request.json();
   } catch {
@@ -135,7 +135,6 @@ export async function POST(request: Request) {
       line_items: lineItems,
       success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/checkout`,
-      customer_email: body.email || undefined,
       shipping_address_collection: {
         allowed_countries: ["US"],
       },
