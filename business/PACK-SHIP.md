@@ -112,7 +112,9 @@ NestPaw will email the customer from `hello@shopnestpaw.com` with tracking and a
 
 ## Related
 
-- Launch tasks: [TODO.md](TODO.md)
-- Full pipeline: [README.md](README.md)
+- Launch tasks: [TODO.md](../TODO.md)
+- Full pipeline overview: [README.md](../README.md)
+- End-to-end ops PDF: [pdfs/nestpaw-fulfillment-pipeline.pdf](pdfs/nestpaw-fulfillment-pipeline.pdf)
+- Product catalog PDF: [pdfs/nestpaw-product-catalog.pdf](pdfs/nestpaw-product-catalog.pdf)
 - Tips card artwork: `store/public/packaging/nestpaw-calm-tips-card.png`
 - Editable tips card source: `store/public/packaging/nestpaw-calm-tips-card.html`

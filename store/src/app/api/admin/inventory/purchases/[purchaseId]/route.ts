@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { ADMIN_COOKIE, verifyAdminSessionToken } from "@/lib/admin-auth";
-import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
+import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { updateInventoryPurchase } from "@/lib/orders";
 
 async function requireAdmin() {
@@ -20,7 +20,7 @@ type PurchaseBody = {
   }[];
 };
 
-function parsePurchaseBody(body: PurchaseBody) {
+async function parsePurchaseBody(body: PurchaseBody) {
   const allowedVendors = new Set(["Alibaba", "Amazon", "Print shop", "Other"]);
   const vendorRaw = String(body.vendor ?? "Amazon").trim();
   const vendor = allowedVendors.has(vendorRaw) ? vendorRaw : null;
@@ -31,6 +31,9 @@ function parsePurchaseBody(body: PurchaseBody) {
   }
 
   const notes = String(body.notes ?? "").trim();
+  const catalogIds = new Set(
+    (await getMergedInventoryCatalog()).map((item) => item.id),
+  );
   const items = (body.items ?? [])
     .map((item) => ({
       inventoryItemId: String(item.inventoryItemId ?? "").trim(),
@@ -39,7 +42,7 @@ function parsePurchaseBody(body: PurchaseBody) {
     }))
     .filter(
       (item) =>
-        getInventoryCatalogItem(item.inventoryItemId) &&
+        catalogIds.has(item.inventoryItemId) &&
         Number.isInteger(item.quantity) &&
         item.quantity > 0 &&
         Number.isFinite(item.price) &&
@@ -82,7 +85,7 @@ export async function PUT(
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const parsed = parsePurchaseBody(body);
+  const parsed = await parsePurchaseBody(body);
   if ("error" in parsed) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }

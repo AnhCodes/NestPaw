@@ -19,7 +19,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-OUT = Path(__file__).with_name("nestpaw-product-catalog.pdf")
+OUT = Path(__file__).resolve().parents[1] / "pdfs" / "nestpaw-product-catalog.pdf"
 
 # Palette
 MOSS = HexColor("#1f3d32")

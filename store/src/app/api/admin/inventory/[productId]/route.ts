@@ -5,8 +5,12 @@ import {
   verifyAdminSessionToken,
 } from "@/lib/admin-auth";
 import { getDb } from "@/lib/db";
-import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
 import { inventory } from "@/lib/db/schema";
+import {
+  isBuiltinCatalogItem,
+  removeInventoryItem,
+  resolveInventoryCatalogItem,
+} from "@/lib/inventory";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -23,12 +27,35 @@ export async function POST(
   }
 
   const { productId } = await context.params;
-  const inventoryItem = getInventoryCatalogItem(productId);
+  const form = await request.formData();
+  const intent = String(form.get("intent") ?? "save");
+
+  if (intent === "delete") {
+    try {
+      await removeInventoryItem(productId);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not remove item";
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/inventory");
+    const redirectTo = String(form.get("redirectTo") ?? "/admin/inventory");
+    const safeRedirect =
+      redirectTo === "/admin" || redirectTo.startsWith("/admin/")
+        ? redirectTo
+        : "/admin/inventory";
+    return NextResponse.redirect(new URL(safeRedirect, request.url), {
+      status: 303,
+    });
+  }
+
+  const inventoryItem = await resolveInventoryCatalogItem(productId);
   if (!inventoryItem) {
     return NextResponse.json({ error: "Unknown inventory item" }, { status: 404 });
   }
 
-  const form = await request.formData();
   const stock = Number(form.get("stock"));
   const lowStockThreshold = Number(form.get("lowStockThreshold"));
 
@@ -43,14 +70,18 @@ export async function POST(
     return NextResponse.json({ error: "Invalid threshold" }, { status: 400 });
   }
 
+  const custom = !isBuiltinCatalogItem(productId);
   const db = getDb();
   await db
     .insert(inventory)
     .values({
       productId,
+      name: custom ? inventoryItem.name : null,
+      section: custom ? inventoryItem.section : null,
       stock,
       storefrontStock: 0,
       lowStockThreshold,
+      tracksStock: inventoryItem.tracksStock !== false,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
@@ -62,7 +93,6 @@ export async function POST(
       },
     });
 
-  // Admin-only save — does not publish to storefront.
   revalidatePath("/admin");
   revalidatePath("/admin/inventory");
 

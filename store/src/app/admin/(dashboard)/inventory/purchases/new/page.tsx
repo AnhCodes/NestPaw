@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { PurchaseLogForm } from "@/components/purchase-log-form";
+import { getMergedInventoryCatalog } from "@/lib/inventory";
 
-export default function NewInventoryPurchasePage() {
+export default async function NewInventoryPurchasePage() {
+  const catalog = await getMergedInventoryCatalog();
+
   return (
     <div>
       <Link
@@ -20,7 +23,7 @@ export default function NewInventoryPurchasePage() {
         warehouse counts.
       </p>
 
-      <PurchaseLogForm />
+      <PurchaseLogForm catalog={catalog} />
     </div>
   );
 }

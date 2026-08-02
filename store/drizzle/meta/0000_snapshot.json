@@ -303,8 +303,7 @@
       "values": [
         "unfulfilled",
         "packed",
-        "shipped",
-        "delivered"
+        "shipped"
       ]
     }
   },

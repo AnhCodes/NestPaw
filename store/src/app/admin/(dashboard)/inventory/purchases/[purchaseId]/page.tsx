@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PurchaseLogForm } from "@/components/purchase-log-form";
+import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { getInventoryPurchaseById } from "@/lib/orders";
 
 export default async function EditInventoryPurchasePage({
@@ -9,7 +10,10 @@ export default async function EditInventoryPurchasePage({
   params: Promise<{ purchaseId: string }>;
 }) {
   const { purchaseId } = await params;
-  const purchase = await getInventoryPurchaseById(purchaseId);
+  const [purchase, catalog] = await Promise.all([
+    getInventoryPurchaseById(purchaseId),
+    getMergedInventoryCatalog(),
+  ]);
   if (!purchase) notFound();
 
   return (
@@ -29,6 +33,7 @@ export default async function EditInventoryPurchasePage({
       </p>
 
       <PurchaseLogForm
+        catalog={catalog}
         initial={{
           purchaseId: purchase.id,
           vendor: purchase.vendor,

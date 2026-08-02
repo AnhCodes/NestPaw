@@ -1,10 +1,13 @@
 import Link from "next/link";
 import {
   catalogItemTracksStock,
-  inventoryCatalog,
   inventorySectionLabels,
   type InventorySection,
 } from "@/lib/inventory-catalog";
+import {
+  canRemoveInventoryItem,
+  getMergedInventoryCatalog,
+} from "@/lib/inventory";
 import { formatPrice } from "@/lib/products";
 import {
   getPurchaseSpendSummary,
@@ -18,11 +21,12 @@ function formatCents(cents: number) {
 }
 
 export default async function AdminOverviewPage() {
-  const [summary, spend, orders, inventoryRows] = await Promise.all([
+  const [summary, spend, orders, inventoryRows, catalog] = await Promise.all([
     getRevenueSummary(),
     getPurchaseSpendSummary(),
     listOrders(),
     listInventoryRows(),
+    getMergedInventoryCatalog(),
   ]);
 
   const recent = orders.slice(0, 8);
@@ -38,7 +42,7 @@ export default async function AdminOverviewPage() {
     .map((section) => ({
       section,
       label: inventorySectionLabels[section],
-      items: inventoryCatalog
+      items: catalog
         .filter(
           (item) => item.section === section && catalogItemTracksStock(item),
         )
@@ -187,10 +191,27 @@ export default async function AdminOverviewPage() {
                         key={item.id}
                         className="flex items-center justify-between gap-4 px-4 py-3"
                       >
-                        <p className="text-sm font-medium">{item.name}</p>
-                        <p className="text-sm text-[color:var(--admin-muted)]">
-                          {item.stock} in stock
-                        </p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">{item.name}</p>
+                          <p className="text-sm text-[color:var(--admin-muted)]">
+                            {item.stock} in stock
+                          </p>
+                        </div>
+                        {canRemoveInventoryItem(item.id) ? (
+                          <form
+                            action={`/api/admin/inventory/${item.id}`}
+                            method="post"
+                          >
+                            <input type="hidden" name="intent" value="delete" />
+                            <input type="hidden" name="redirectTo" value="/admin" />
+                            <button
+                              type="submit"
+                              className="border border-[color:var(--admin-danger-border)] bg-[var(--admin-danger-bg)] px-2.5 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-danger-fg)] transition hover:opacity-90"
+                            >
+                              Remove
+                            </button>
+                          </form>
+                        ) : null}
                       </div>
                     ))}
                   </div>

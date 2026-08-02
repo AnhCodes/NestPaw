@@ -34,6 +34,7 @@ Live stock lives in Postgres (`inventory` table). Edit it in **[/admin/inventory
 createdb nestpaw   # or use Neon DATABASE_URL
 npm run db:push
 npm run db:seed
+npm run db:seed-order   # sample paid order for admin fulfillment testing
 ```
 
 ## Admin

@@ -17,7 +17,9 @@ import {
   newId,
   stableCustomerId,
 } from "@/lib/inventory";
-import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
+import {
+  getMergedInventoryCatalog,
+} from "@/lib/inventory";
 import type { LoggedOrder } from "@/lib/order-logger";
 
 export async function persistOrderFromStripe(order: LoggedOrder) {
@@ -154,6 +156,83 @@ export async function updateOrderFulfillment(
       fulfillmentStatus,
       trackingNumber: trackingNumber === undefined ? undefined : trackingNumber,
       updatedAt: new Date(),
+    })
+    .where(eq(orders.id, orderId));
+}
+
+export async function updateOrderShippingDetails(
+  orderId: string,
+  input: {
+    email: string;
+    shippingName: string;
+    shippingPhone: string;
+    shippingAddress: {
+      line1: string;
+      line2: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+  },
+) {
+  const db = getDb();
+  const email = input.email.trim().toLowerCase();
+  if (!email) {
+    throw new Error("Email is required");
+  }
+
+  const [existing] = await db
+    .select({
+      customerId: orders.customerId,
+    })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (!existing) {
+    throw new Error("Order not found");
+  }
+
+  const now = new Date();
+  const shippingName = input.shippingName.trim() || null;
+  const shippingPhone = input.shippingPhone.trim() || null;
+  const shippingAddress = {
+    line1: input.shippingAddress.line1.trim(),
+    line2: input.shippingAddress.line2.trim(),
+    city: input.shippingAddress.city.trim(),
+    state: input.shippingAddress.state.trim(),
+    postal_code: input.shippingAddress.postal_code.trim(),
+    country: input.shippingAddress.country.trim() || "US",
+  };
+
+  const [emailOwner] = await db
+    .select({ id: customers.id })
+    .from(customers)
+    .where(eq(customers.email, email))
+    .limit(1);
+
+  if (emailOwner && emailOwner.id !== existing.customerId) {
+    throw new Error("Another customer already uses that email");
+  }
+
+  await db
+    .update(customers)
+    .set({
+      email,
+      name: shippingName,
+      phone: shippingPhone,
+      updatedAt: now,
+    })
+    .where(eq(customers.id, existing.customerId));
+
+  await db
+    .update(orders)
+    .set({
+      shippingName,
+      shippingPhone,
+      shippingAddress,
+      updatedAt: now,
     })
     .where(eq(orders.id, orderId));
 }
@@ -308,9 +387,12 @@ export async function getPurchaseSpendSummary() {
   let operationsSpendCents = 0;
   let inventoryLineCount = 0;
   let operationsLineCount = 0;
+  const catalogById = new Map(
+    (await getMergedInventoryCatalog()).map((item) => [item.id, item]),
+  );
 
   for (const line of lines) {
-    const catalogItem = getInventoryCatalogItem(line.inventoryItemId);
+    const catalogItem = catalogById.get(line.inventoryItemId);
     const section = catalogItem?.section;
     const isOperations =
       section === "shipping-supplies" || section === "business-ops";

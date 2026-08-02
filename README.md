@@ -17,8 +17,12 @@ NestPaw/
 ├── TODO.md                           # Active launch checklist
 ├── business/
 │   ├── PACK-SHIP.md                  # Per-order pack → Pirate Ship → USPS → admin
-│   ├── nestpaw-product-catalog.pdf   # Sell prices, Alibaba costs, suppliers, links
-│   └── generate-catalog.py
+│   ├── pdfs/
+│   │   ├── nestpaw-product-catalog.pdf
+│   │   └── nestpaw-fulfillment-pipeline.pdf
+│   └── scripts/
+│       ├── generate-catalog.py
+│       └── generate-pipeline-pdf.py
 └── store/                            # Next.js storefront + /admin
 ```
 
@@ -43,7 +47,7 @@ NestPaw/
 ## End-to-end flow
 
 ### 1. Source inventory
-1. Choose products from [business/nestpaw-product-catalog.pdf](business/nestpaw-product-catalog.pdf).
+1. Choose products from [business/pdfs/nestpaw-product-catalog.pdf](business/pdfs/nestpaw-product-catalog.pdf).
 2. Order samples / wholesale on Alibaba or CJ.
 3. Log the purchase in `/admin` (vendor, items, quantities, cost).
 

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import {
   catalogItemTracksStock,
-  inventoryCatalog,
   inventorySectionLabels,
+  type InventoryCatalogItem,
   type InventorySection,
 } from "@/lib/inventory-catalog";
 import { formatPrice } from "@/lib/products";
@@ -39,10 +39,10 @@ const sections: InventorySection[] = [
 const vendors = ["Alibaba", "Amazon", "Print shop", "Other"] as const;
 type Vendor = (typeof vendors)[number];
 
-function newLine(): PurchaseLine {
+function newLine(catalog: InventoryCatalogItem[]): PurchaseLine {
   return {
     key: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    inventoryItemId: inventoryCatalog[0]?.id ?? "",
+    inventoryItemId: catalog[0]?.id ?? "",
     quantity: "1",
     price: "",
   };
@@ -52,8 +52,11 @@ function toVendor(value: string): Vendor {
   return vendors.includes(value as Vendor) ? (value as Vendor) : "Other";
 }
 
-function linesFromInitial(initial?: PurchaseLogFormInitial): PurchaseLine[] {
-  if (!initial || initial.items.length === 0) return [newLine()];
+function linesFromInitial(
+  catalog: InventoryCatalogItem[],
+  initial?: PurchaseLogFormInitial,
+): PurchaseLine[] {
+  if (!initial || initial.items.length === 0) return [newLine(catalog)];
   return initial.items.map((item, index) => ({
     key: `existing-${index}-${item.inventoryItemId}`,
     inventoryItemId: item.inventoryItemId,
@@ -63,8 +66,10 @@ function linesFromInitial(initial?: PurchaseLogFormInitial): PurchaseLine[] {
 }
 
 export function PurchaseLogForm({
+  catalog,
   initial,
 }: {
+  catalog: InventoryCatalogItem[];
   initial?: PurchaseLogFormInitial;
 }) {
   const isEdit = Boolean(initial?.purchaseId);
@@ -73,7 +78,7 @@ export function PurchaseLogForm({
   );
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [lines, setLines] = useState<PurchaseLine[]>(() =>
-    linesFromInitial(initial),
+    linesFromInitial(catalog, initial),
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -195,7 +200,7 @@ export function PurchaseLogForm({
           </div>
           <button
             type="button"
-            onClick={() => setLines((current) => [...current, newLine()])}
+            onClick={() => setLines((current) => [...current, newLine(catalog)])}
             className="btn-dark-ghost"
           >
             Add item
@@ -204,7 +209,7 @@ export function PurchaseLogForm({
 
         <div className="space-y-3">
           {lines.map((line) => {
-            const selected = inventoryCatalog.find(
+            const selected = catalog.find(
               (item) => item.id === line.inventoryItemId,
             );
             const expenseOnly = selected
@@ -226,9 +231,10 @@ export function PurchaseLogForm({
                     className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
                   >
                     {sections.map((section) => {
-                      const items = inventoryCatalog.filter(
+                      const items = catalog.filter(
                         (item) => item.section === section,
                       );
+                      if (items.length === 0) return null;
                       return (
                         <optgroup
                           key={section}

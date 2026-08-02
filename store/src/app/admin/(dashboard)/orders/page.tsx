@@ -15,7 +15,7 @@ export default async function AdminOrdersPage() {
         Orders
       </h1>
       <p className="mt-2 text-[color:var(--admin-muted)]">
-        Paid checkouts from Stripe, ready for fulfillment.
+        Paid checkouts from Stripe. Open an order to update fulfillment status and tracking.
       </p>
 
       <div className="mt-8 overflow-x-auto border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
@@ -29,12 +29,15 @@ export default async function AdminOrdersPage() {
               <th className="px-4 py-3 font-semibold">Fulfillment</th>
               <th className="px-4 py-3 font-semibold">Tracking</th>
               <th className="px-4 py-3 font-semibold">Returns</th>
+              <th className="px-4 py-3 font-semibold">
+                <span className="sr-only">Edit</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[color:var(--admin-border)]">
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-[color:var(--admin-muted)]">
+                <td colSpan={8} className="px-4 py-8 text-[color:var(--admin-muted)]">
                   No orders yet.
                 </td>
               </tr>
@@ -42,14 +45,9 @@ export default async function AdminOrdersPage() {
               orders.map(({ order, customer }) => (
                 <tr key={order.id} className="hover:bg-[var(--admin-hover)]">
                   <td className="px-4 py-3 text-[color:var(--admin-muted)]">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="font-medium text-[color:var(--admin-fg)] hover:underline"
-                    >
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleString()
-                        : "—"}
-                    </Link>
+                    {order.createdAt
+                      ? new Date(order.createdAt).toLocaleString()
+                      : "—"}
                   </td>
                   <td className="px-4 py-3">{customer.email}</td>
                   <td className="px-4 py-3">
@@ -66,6 +64,14 @@ export default async function AdminOrdersPage() {
                   </td>
                   <td className="px-4 py-3 capitalize">
                     {order.returnStatus === "none" ? "—" : order.returnStatus}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="inline-flex border border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-fg)] transition hover:bg-[var(--admin-hover)]"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))

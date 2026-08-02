@@ -136,6 +136,7 @@ export function PurchaseLogsSection({
   purchases: PurchaseLogView[];
   sectionLabels: string[];
 }) {
+  const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [vendor, setVendor] = useState<(typeof vendors)[number]>("All");
   const [section, setSection] = useState("All");
@@ -195,35 +196,47 @@ export function PurchaseLogsSection({
 
   return (
     <>
-      <section className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">
-              Recent purchase logs
-            </h2>
-            <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
-              Products, supplies, and ops
-            </p>
-          </div>
+      <section className="mt-8 border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+          <button
+            type="button"
+            onClick={() => setExpanded((current) => !current)}
+            className="flex min-w-0 flex-1 items-start gap-3 text-left"
+            aria-expanded={expanded}
+          >
+            <span className="mt-1 text-sm text-[color:var(--admin-subtle)]">
+              {expanded ? "▾" : "▸"}
+            </span>
+            <span>
+              <span className="block font-display text-2xl font-semibold text-[color:var(--admin-fg)]">
+                Recent purchase logs
+              </span>
+              <span className="mt-1 block text-xs uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
+                {purchases.length} total · {recent.length} recent
+              </span>
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
+            className="border border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] px-3 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
           >
             View all logs
           </button>
         </div>
-        <div className="mt-4 space-y-4">
-          {recent.length === 0 ? (
-            <div className="border border-dashed border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5 text-sm text-[color:var(--admin-muted)]">
-              No purchase logs yet.
-            </div>
-          ) : (
-            recent.map((purchase) => (
-              <PurchaseCard key={purchase.id} purchase={purchase} />
-            ))
-          )}
-        </div>
+        {expanded ? (
+          <div className="space-y-4 border-t border-[color:var(--admin-border)] px-5 py-4">
+            {recent.length === 0 ? (
+              <div className="border border-dashed border-[color:var(--admin-border)] p-5 text-sm text-[color:var(--admin-muted)]">
+                No purchase logs yet.
+              </div>
+            ) : (
+              recent.map((purchase) => (
+                <PurchaseCard key={purchase.id} purchase={purchase} />
+              ))
+            )}
+          </div>
+        ) : null}
       </section>
 
       {open ? (

@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   jsonb,
   pgEnum,
@@ -12,7 +13,6 @@ export const fulfillmentStatusEnum = pgEnum("fulfillment_status", [
   "unfulfilled",
   "packed",
   "shipped",
-  "delivered",
 ]);
 
 export const returnStatusEnum = pgEnum("return_status", [
@@ -76,11 +76,19 @@ export const orderItems = pgTable("order_items", {
 
 export const inventory = pgTable("inventory", {
   productId: text("product_id").primaryKey(),
+  /** Set for admin-created items; built-in catalog items leave this null. */
+  name: text("name"),
+  /** Set for admin-created items (e.g. store-products, treats). */
+  section: text("section"),
   /** Warehouse / admin on-hand count. Edited in admin; updated by purchase logs. */
   stock: integer("stock").notNull().default(0),
   /** Published availability on the storefront. Only updates via explicit sync. */
   storefrontStock: integer("storefront_stock").notNull().default(0),
   lowStockThreshold: integer("low_stock_threshold").notNull().default(3),
+  /** When false, purchase logs count toward spend only. */
+  tracksStock: boolean("tracks_stock").notNull().default(true),
+  /** Soft-remove from admin inventory / overview lists. */
+  hidden: boolean("hidden").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

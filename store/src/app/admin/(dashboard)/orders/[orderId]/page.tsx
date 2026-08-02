@@ -9,11 +9,13 @@ function formatCents(cents: number | null | undefined) {
   return formatPrice(cents / 100);
 }
 
+const fieldClass =
+  "mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] placeholder:text-[color:var(--admin-subtle)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30";
+
 const statuses: FulfillmentStatus[] = [
   "unfulfilled",
   "packed",
   "shipped",
-  "delivered",
 ];
 
 const returnStatuses: ReturnStatus[] = [
@@ -48,6 +50,11 @@ function shippedEmailMessage(value: string | undefined) {
         tone: "ok" as const,
         text: "Fulfillment saved. Shipping email was already sent for this tracking number.",
       };
+    case "tracking_mismatch":
+      return {
+        tone: "warn" as const,
+        text: "Tracking numbers did not match. Nothing was saved — re-enter and confirm carefully.",
+      };
     case "saved":
       return {
         tone: "ok" as const,
@@ -58,12 +65,30 @@ function shippedEmailMessage(value: string | undefined) {
   }
 }
 
+function customerErrorMessage(value: string | undefined) {
+  switch (value) {
+    case "email_required":
+      return "Email is required.";
+    case "email_taken":
+      return "Another customer already uses that email.";
+    case "save_failed":
+      return "Could not save customer details. Try again.";
+    default:
+      return null;
+  }
+}
+
 export default async function AdminOrderDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ orderId: string }>;
-  searchParams: Promise<{ shippedEmail?: string; returnSaved?: string }>;
+  searchParams: Promise<{
+    shippedEmail?: string;
+    returnSaved?: string;
+    customerSaved?: string;
+    customerError?: string;
+  }>;
 }) {
   const { orderId } = await params;
   const query = await searchParams;
@@ -71,8 +96,9 @@ export default async function AdminOrderDetailPage({
   if (!data) notFound();
 
   const { order, customer, items } = data;
-  const address = order.shippingAddress as Record<string, string> | null;
+  const address = (order.shippingAddress ?? {}) as Record<string, string>;
   const shippedNotice = shippedEmailMessage(query.shippedEmail);
+  const customerError = customerErrorMessage(query.customerError);
 
   return (
     <div>
@@ -98,6 +124,16 @@ export default async function AdminOrderDetailPage({
           {shippedNotice.text}
         </p>
       ) : null}
+      {query.customerSaved === "1" ? (
+        <p className="mt-6 border border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 px-4 py-3 text-sm text-[color:var(--admin-fg)]">
+          Customer details saved.
+        </p>
+      ) : null}
+      {customerError ? (
+        <p className="mt-6 border border-[color:var(--admin-warning-fg)]/30 bg-[color:var(--admin-warning-fg)]/10 px-4 py-3 text-sm text-[color:var(--admin-warning-fg)]">
+          {customerError}
+        </p>
+      ) : null}
       {query.returnSaved === "1" ? (
         <p className="mt-6 border border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 px-4 py-3 text-sm text-[color:var(--admin-fg)]">
           Return status saved.
@@ -107,44 +143,104 @@ export default async function AdminOrderDetailPage({
       <div className="mt-8 grid gap-8 xl:grid-cols-3">
         <section className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6">
           <h2 className="font-display text-xl font-semibold">Customer</h2>
-          <dl className="mt-4 space-y-2 text-sm">
-            <div>
-              <dt className="text-[color:var(--admin-subtle)]">Email</dt>
-              <dd>
-                <Link
-                  href={`/admin/customers/${customer.id}`}
-                  className="hover:underline"
-                >
-                  {customer.email}
-                </Link>
-              </dd>
+          <form
+            action={`/api/admin/orders/${order.id}`}
+            method="post"
+            className="mt-4 space-y-4"
+          >
+            <input type="hidden" name="intent" value="customer" />
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Email
+              <input
+                name="email"
+                type="email"
+                required
+                defaultValue={customer.email}
+                className={fieldClass}
+              />
+            </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Name
+              <input
+                name="shippingName"
+                defaultValue={order.shippingName || customer.name || ""}
+                className={fieldClass}
+              />
+            </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Phone
+              <input
+                name="shippingPhone"
+                defaultValue={order.shippingPhone || customer.phone || ""}
+                className={fieldClass}
+              />
+            </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Address line 1
+              <input
+                name="line1"
+                defaultValue={address.line1 ?? ""}
+                className={fieldClass}
+              />
+            </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Address line 2
+              <input
+                name="line2"
+                defaultValue={address.line2 ?? ""}
+                className={fieldClass}
+              />
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm text-[color:var(--admin-fg)]">
+                City
+                <input
+                  name="city"
+                  defaultValue={address.city ?? ""}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="block text-sm text-[color:var(--admin-fg)]">
+                State
+                <input
+                  name="state"
+                  defaultValue={address.state ?? ""}
+                  className={fieldClass}
+                />
+              </label>
             </div>
-            <div>
-              <dt className="text-[color:var(--admin-subtle)]">Name</dt>
-              <dd>{order.shippingName || customer.name || "—"}</dd>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm text-[color:var(--admin-fg)]">
+                Postal code
+                <input
+                  name="postal_code"
+                  defaultValue={address.postal_code ?? ""}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="block text-sm text-[color:var(--admin-fg)]">
+                Country
+                <input
+                  name="country"
+                  defaultValue={address.country || "US"}
+                  className={fieldClass}
+                />
+              </label>
             </div>
-            <div>
-              <dt className="text-[color:var(--admin-subtle)]">Phone</dt>
-              <dd>{order.shippingPhone || customer.phone || "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-[color:var(--admin-subtle)]">Ship to</dt>
-              <dd className="whitespace-pre-line">
-                {address
-                  ? [
-                      address.line1,
-                      address.line2,
-                      [address.city, address.state, address.postal_code]
-                        .filter(Boolean)
-                        .join(", "),
-                      address.country,
-                    ]
-                      .filter(Boolean)
-                      .join("\n")
-                  : "—"}
-              </dd>
-            </div>
-          </dl>
+            <button type="submit" className="btn-primary">
+              Save customer
+            </button>
+            <p className="text-xs text-[color:var(--admin-subtle)]">
+              Updates this order&apos;s ship-to details and the linked customer
+              profile.{" "}
+              <Link
+                href={`/admin/customers/${customer.id}`}
+                className="underline hover:text-[color:var(--admin-fg)]"
+              >
+                View customer
+              </Link>
+            </p>
+          </form>
         </section>
 
         <section className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6">
@@ -155,14 +251,12 @@ export default async function AdminOrderDetailPage({
             className="mt-4 space-y-4"
           >
             <input type="hidden" name="intent" value="fulfillment" />
-            <input type="hidden" name="returnStatus" value={order.returnStatus} />
-            <input type="hidden" name="returnNotes" value={order.returnNotes ?? ""} />
             <label className="block text-sm text-[color:var(--admin-fg)]">
               Status
               <select
                 name="fulfillmentStatus"
                 defaultValue={order.fulfillmentStatus}
-                className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                className={fieldClass}
               >
                 {statuses.map((status) => (
                   <option key={status} value={status}>
@@ -176,13 +270,26 @@ export default async function AdminOrderDetailPage({
               <input
                 name="trackingNumber"
                 defaultValue={order.trackingNumber ?? ""}
-                className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] placeholder:text-[color:var(--admin-subtle)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                autoComplete="off"
+                spellCheck={false}
+                className={fieldClass}
                 placeholder="Required to email tracking"
               />
             </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Confirm tracking number
+              <input
+                name="trackingNumberConfirm"
+                defaultValue={order.trackingNumber ?? ""}
+                autoComplete="off"
+                spellCheck={false}
+                className={fieldClass}
+                placeholder="Re-type to confirm"
+              />
+            </label>
             <p className="text-xs text-[color:var(--admin-subtle)]">
-              Setting status to shipped with a tracking number emails the customer
-              a USPS tracking link.
+              Re-type the tracking number to catch typos before saving. Setting
+              status to shipped with tracking emails the customer a USPS link.
             </p>
             <button type="submit" className="btn-primary">
               Save fulfillment
@@ -208,14 +315,12 @@ export default async function AdminOrderDetailPage({
             className="mt-4 space-y-4"
           >
             <input type="hidden" name="intent" value="return" />
-            <input type="hidden" name="fulfillmentStatus" value={order.fulfillmentStatus} />
-            <input type="hidden" name="trackingNumber" value={order.trackingNumber ?? ""} />
             <label className="block text-sm text-[color:var(--admin-fg)]">
               Return status
               <select
                 name="returnStatus"
                 defaultValue={order.returnStatus}
-                className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                className={fieldClass}
               >
                 {returnStatuses.map((status) => (
                   <option key={status} value={status}>
@@ -231,7 +336,7 @@ export default async function AdminOrderDetailPage({
                 rows={5}
                 defaultValue={order.returnNotes ?? ""}
                 placeholder="Reason, customer message, approval notes, damaged item details, etc."
-                className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] placeholder:text-[color:var(--admin-subtle)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                className={fieldClass}
               />
             </label>
             <button type="submit" className="btn-primary">

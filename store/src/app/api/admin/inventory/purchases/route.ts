@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, verifyAdminSessionToken } from "@/lib/admin-auth";
 import { createInventoryPurchase } from "@/lib/orders";
-import { getInventoryCatalogItem } from "@/lib/inventory-catalog";
+import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -42,6 +42,9 @@ export async function POST(request: Request) {
     );
   }
   const notes = String(body.notes ?? "").trim();
+  const catalogIds = new Set(
+    (await getMergedInventoryCatalog()).map((item) => item.id),
+  );
 
   const items = (body.items ?? [])
     .map((item) => ({
@@ -51,7 +54,7 @@ export async function POST(request: Request) {
     }))
     .filter(
       (item) =>
-        getInventoryCatalogItem(item.inventoryItemId) &&
+        catalogIds.has(item.inventoryItemId) &&
         Number.isInteger(item.quantity) &&
         item.quantity > 0 &&
         Number.isFinite(item.price) &&

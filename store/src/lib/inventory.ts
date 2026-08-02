@@ -1,15 +1,26 @@
 import { createHash, randomUUID } from "crypto";
-import { eq, sql } from "drizzle-orm";
+import { eq, isNotNull, sql } from "drizzle-orm";
 import { getDb, isDatabaseConfigured } from "@/lib/db";
 import {
   getKitComponentIds,
   inventoryCatalog,
   isKitStorefrontProduct,
+  kitAssemblies,
+  type InventoryCatalogItem,
+  type InventorySection,
 } from "@/lib/inventory-catalog";
 import { inventory } from "@/lib/db/schema";
 import { products } from "@/lib/products";
 
 export type StockMap = Record<string, number>;
+
+const inventorySections = new Set<InventorySection>([
+  "store-products",
+  "treats",
+  "printed-materials",
+  "shipping-supplies",
+  "business-ops",
+]);
 
 function stockById(
   rows: { productId: string; stock: number; storefrontStock: number }[],
@@ -37,6 +48,92 @@ function kitAdminStock(
   return Math.min(...components.map((id) => byId.get(id)?.stock ?? 0));
 }
 
+export function isBuiltinCatalogItem(id: string) {
+  return inventoryCatalog.some((item) => item.id === id);
+}
+
+export function slugifyInventoryId(name: string) {
+  return (
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || "item"
+  );
+}
+
+function customRowToCatalogItem(row: {
+  productId: string;
+  name: string | null;
+  section: string | null;
+  lowStockThreshold: number;
+  tracksStock: boolean;
+}): InventoryCatalogItem | null {
+  if (!row.name || !row.section) return null;
+  if (!inventorySections.has(row.section as InventorySection)) return null;
+  return {
+    id: row.productId,
+    name: row.name,
+    section: row.section as InventorySection,
+    lowStockThreshold: row.lowStockThreshold,
+    tracksStock: row.tracksStock,
+  };
+}
+
+export async function listHiddenInventoryIds(): Promise<Set<string>> {
+  if (!isDatabaseConfigured()) return new Set();
+  try {
+    const db = getDb();
+    const rows = await db
+      .select({ productId: inventory.productId })
+      .from(inventory)
+      .where(eq(inventory.hidden, true));
+    return new Set(rows.map((row) => row.productId));
+  } catch (err) {
+    console.error("[nestpaw][inventory] listHiddenInventoryIds failed", err);
+    return new Set();
+  }
+}
+
+export async function listCustomCatalogItems(): Promise<InventoryCatalogItem[]> {
+  if (!isDatabaseConfigured()) return [];
+  try {
+    const db = getDb();
+    const rows = await db
+      .select()
+      .from(inventory)
+      .where(isNotNull(inventory.name));
+    return rows
+      .filter((row) => !isBuiltinCatalogItem(row.productId) && !row.hidden)
+      .map(customRowToCatalogItem)
+      .filter((item): item is InventoryCatalogItem => item != null);
+  } catch (err) {
+    console.error("[nestpaw][inventory] listCustomCatalogItems failed", err);
+    return [];
+  }
+}
+
+export async function getMergedInventoryCatalog(): Promise<
+  InventoryCatalogItem[]
+> {
+  const [custom, hiddenIds] = await Promise.all([
+    listCustomCatalogItems(),
+    listHiddenInventoryIds(),
+  ]);
+  return [
+    ...inventoryCatalog.filter((item) => !hiddenIds.has(item.id)),
+    ...custom,
+  ];
+}
+
+export async function resolveInventoryCatalogItem(id: string) {
+  const builtin = inventoryCatalog.find((item) => item.id === id);
+  if (builtin) return builtin;
+  const custom = await listCustomCatalogItems();
+  return custom.find((item) => item.id === id) ?? null;
+}
+
 export async function getStockMap(): Promise<StockMap> {
   const fallback = (): StockMap =>
     Object.fromEntries(products.map((p) => [p.id, p.stock]));
@@ -53,7 +150,6 @@ export async function getStockMap(): Promise<StockMap> {
 
     for (const product of products) {
       if (isKitStorefrontProduct(product.id)) {
-        // Kit sellable quantity is always the scarcer published component.
         map[product.id] = kitPublishedStock(product.id, byId);
       } else {
         map[product.id] = byId.get(product.id)?.storefrontStock ?? 0;
@@ -88,12 +184,12 @@ export async function seedInventory() {
         stock: 0,
         storefrontStock: 0,
         lowStockThreshold: item.lowStockThreshold,
+        tracksStock: true,
         updatedAt: now,
       })
       .onConflictDoNothing();
   }
 
-  // Keep a published snapshot row for kit storefront products.
   for (const product of products) {
     if (!isKitStorefrontProduct(product.id)) continue;
     await db
@@ -103,10 +199,118 @@ export async function seedInventory() {
         stock: 0,
         storefrontStock: 0,
         lowStockThreshold: 3,
+        tracksStock: true,
         updatedAt: now,
       })
       .onConflictDoNothing();
   }
+}
+
+export async function createCustomInventoryItem(input: {
+  name: string;
+  section: InventorySection;
+  stock?: number;
+  lowStockThreshold?: number;
+  tracksStock?: boolean;
+}) {
+  const name = input.name.trim();
+  if (!name) throw new Error("Name is required");
+  if (!inventorySections.has(input.section)) {
+    throw new Error("Invalid section");
+  }
+
+  const db = getDb();
+  const baseId = slugifyInventoryId(name);
+  let productId = baseId;
+  let attempt = 0;
+  while (true) {
+    const builtin = isBuiltinCatalogItem(productId);
+    const [existing] = await db
+      .select({ productId: inventory.productId })
+      .from(inventory)
+      .where(eq(inventory.productId, productId))
+      .limit(1);
+    if (!builtin && !existing) break;
+    attempt += 1;
+    productId = `${baseId}-${attempt + 1}`;
+    if (attempt > 20) {
+      productId = `${baseId}-${randomUUID().slice(0, 8)}`;
+      break;
+    }
+  }
+
+  const stock = input.stock ?? 0;
+  const lowStockThreshold = input.lowStockThreshold ?? 3;
+  const tracksStock = input.tracksStock !== false;
+  const now = new Date();
+
+  await db.insert(inventory).values({
+    productId,
+    name,
+    section: input.section,
+    stock,
+    storefrontStock: 0,
+    lowStockThreshold,
+    tracksStock,
+    updatedAt: now,
+  });
+
+  return productId;
+}
+
+const kitComponentIds = new Set(Object.values(kitAssemblies).flat());
+
+export function canRemoveInventoryItem(productId: string) {
+  if (isKitStorefrontProduct(productId)) return false;
+  if (kitComponentIds.has(productId)) return false;
+  return true;
+}
+
+export async function removeInventoryItem(productId: string) {
+  if (!canRemoveInventoryItem(productId)) {
+    throw new Error("This inventory item cannot be removed");
+  }
+
+  const db = getDb();
+  const now = new Date();
+
+  // Custom admin-created items are deleted outright.
+  if (!isBuiltinCatalogItem(productId)) {
+    const [row] = await db
+      .select()
+      .from(inventory)
+      .where(eq(inventory.productId, productId))
+      .limit(1);
+    if (!row || !row.name) {
+      throw new Error("Inventory item not found");
+    }
+    await db.delete(inventory).where(eq(inventory.productId, productId));
+    return;
+  }
+
+  // Built-in catalog items are soft-hidden so they leave admin lists.
+  await db
+    .insert(inventory)
+    .values({
+      productId,
+      stock: 0,
+      storefrontStock: 0,
+      lowStockThreshold: 3,
+      tracksStock: true,
+      hidden: true,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: inventory.productId,
+      set: {
+        hidden: true,
+        updatedAt: now,
+      },
+    });
+}
+
+export async function deleteCustomInventoryItem(productId: string) {
+  await removeInventoryItem(productId);
 }
 
 export async function updateStock(productId: string, stock: number) {
@@ -118,6 +322,7 @@ export async function updateStock(productId: string, stock: number) {
       stock,
       storefrontStock: 0,
       lowStockThreshold: 3,
+      tracksStock: true,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
@@ -141,9 +346,10 @@ export async function updateLowStockThreshold(
 export async function syncStockToStorefront() {
   const db = getDb();
   const now = new Date();
+  const catalog = await getMergedInventoryCatalog();
 
-  const storeItems = inventoryCatalog.filter(
-    (item) => item.section === "store-products",
+  const storeItems = catalog.filter(
+    (item) => item.section === "store-products" && item.tracksStock !== false,
   );
 
   for (const item of storeItems) {
@@ -156,7 +362,6 @@ export async function syncStockToStorefront() {
       .where(eq(inventory.productId, item.id));
   }
 
-  // Refresh kit snapshot rows from the scarcer component.
   const freshRows = await db.select().from(inventory);
   const freshById = stockById(freshRows);
   for (const product of products) {
@@ -169,6 +374,7 @@ export async function syncStockToStorefront() {
         stock: published,
         storefrontStock: published,
         lowStockThreshold: 3,
+        tracksStock: true,
         updatedAt: now,
       })
       .onConflictDoUpdate({
@@ -201,11 +407,11 @@ export async function applyAdminStockDeltas(
 ) {
   const db = getDb();
   const now = new Date();
+  const catalog = await getMergedInventoryCatalog();
+  const byId = new Map(catalog.map((item) => [item.id, item]));
 
   for (const item of items) {
-    const catalogItem = inventoryCatalog.find(
-      (row) => row.id === item.inventoryItemId,
-    );
+    const catalogItem = byId.get(item.inventoryItemId);
     if (!catalogItem || item.delta === 0) continue;
     if (catalogItem.tracksStock === false) continue;
 
@@ -214,9 +420,16 @@ export async function applyAdminStockDeltas(
         .insert(inventory)
         .values({
           productId: item.inventoryItemId,
+          name: isBuiltinCatalogItem(item.inventoryItemId)
+            ? null
+            : catalogItem.name,
+          section: isBuiltinCatalogItem(item.inventoryItemId)
+            ? null
+            : catalogItem.section,
           stock: item.delta,
           storefrontStock: 0,
           lowStockThreshold: catalogItem.lowStockThreshold,
+          tracksStock: catalogItem.tracksStock ?? true,
           updatedAt: now,
         })
         .onConflictDoUpdate({

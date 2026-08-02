@@ -1,4 +1,4 @@
-CREATE TYPE "public"."fulfillment_status" AS ENUM('unfulfilled', 'packed', 'shipped', 'delivered');--> statement-breakpoint
+CREATE TYPE "public"."fulfillment_status" AS ENUM('unfulfilled', 'packed', 'shipped');--> statement-breakpoint
 CREATE TABLE "customers" (
 	"id" text PRIMARY KEY NOT NULL,
 	"email" text NOT NULL,
