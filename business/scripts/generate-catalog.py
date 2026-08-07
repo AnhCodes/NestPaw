@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Generate NestPaw sourcing catalog PDF with clean typography."""
+"""Generate NestPaw product catalog PDF with clean typography."""
 
 from datetime import date
 from pathlib import Path
+import random
 
+from reportlab.graphics.shapes import Circle, Drawing, Line, Rect, String
 from reportlab.lib.colors import HexColor, white
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
-    HRFlowable,
-    KeepTogether,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -21,372 +21,290 @@ from reportlab.platypus import (
 
 OUT = Path(__file__).resolve().parents[1] / "pdfs" / "nestpaw-product-catalog.pdf"
 
-# Palette
+# Palette (shared with investor brief / pipeline)
 MOSS = HexColor("#1f3d32")
-MOSS_SOFT = HexColor("#2d5a47")
-INK = HexColor("#1a1f1c")
-MUTED = HexColor("#5c6b63")
+INK = HexColor("#111111")
+MUTED = HexColor("#4a5750")
 LINE = HexColor("#d5ddd7")
+BG = HexColor("#f4f7f5")  # sub-product / component rows
 RULE = HexColor("#c5cec8")
-BG = HexColor("#f4f7f5")
-BG_CARD = HexColor("#fafbfa")
-ACCENT = HexColor("#246048")
+PRODUCT_BG = white  # top-level products
+PROFIT = HexColor("#2f6b4f")  # make money
+LOSS = HexColor("#a14a3c")  # lose money
+DOT_ZERO = HexColor("#b0b8b3")
 
-# Landed = cost to NestPaw (Alibaba + inbound). Outbound = est. US ship to customer.
-# Free ship on NestPaw orders ≥ $40; customer pays $4.95 under. Solo-item orders.
+# Free ship on NestPaw orders ≥ $40; customer pays $5.50 under.
 FREE_SHIP_AT = 40.0
-CUSTOMER_SHIP_FEE = 4.95
+CUSTOMER_SHIP_FEE = 5.5
 STRIPE_PCT = 0.029
 STRIPE_FIXED = 0.30
 RETURNS_PCT = 0.03
 
-# Shedding Brush Kit components
-# MHC gloves: Alibaba selling unit / MOQ band is a pack of 50 @ $0.56/pc (50–99 tier).
-# Per NestPaw kit we only use 1 glove → amortize pack across 50 kits.
-COMB_UNIT = 0.55  # Kinghon mid of $0.45–$0.60
-GLOVE_UNIT = 0.56  # MHC $0.56 at 50–99 pcs
-GLOVE_PACK_QTY = 50
-GLOVE_PACK_COST = round(GLOVE_UNIT * GLOVE_PACK_QTY, 2)  # $28.00 cash for one pack
-BRUSH_KIT_ALIBABA = round(COMB_UNIT + GLOVE_UNIT, 2)  # $1.11 per kit sold
-BRUSH_KIT_INBOUND = 3.00  # est. China→NestPaw freight pad (planning)
-BRUSH_KIT_LANDED = round(BRUSH_KIT_ALIBABA + BRUSH_KIT_INBOUND, 2)  # $4.11
+# Freight planning pads (per unit). Product rows show To us / Ship / Keep as ranges.
+TO_US_LOW, TO_US_MED, TO_US_HIGH = 3.0, 6.0, 12.0
+SHIP_LOW, SHIP_MED, SHIP_HIGH = 5.0, 7.0, 12.0
+# Match money() two-decimal width so range columns align with Sell/Alibaba.
+# U+2011 non-breaking hyphen — looks like a dash, won't wrap mid-range.
+RANGE_JOIN = "\u2011"
+TO_US_RANGE = f"${TO_US_LOW:.2f}{RANGE_JOIN}${TO_US_HIGH:.2f}"
+SHIP_RANGE = f"${SHIP_LOW:.2f}{RANGE_JOIN}${SHIP_HIGH:.2f}"
+
+
+
+# Brush / glove components (restock MOQ 50 — glove-limited)
+# Comb: Alibaba app quote $3.15/pc · supplier MOQ 10; catalog MOQ 50
+# Gloves: Alibaba app quote $2.94/pc · order of 50
+# NestPaw sells both together as Shedding Brush Kit ($24)
+COMB_UNIT = 3.15
+COMB_MOQ = 50  # restock limited by glove MOQ 50
+GLOVE_UNIT = 2.94
+GLOVE_MOQ = 50
+GLOVE_MOQ_PRICE = round(GLOVE_UNIT * GLOVE_MOQ, 2)  # $147.00
+KIT_SELL = 24.0
+KIT_ALIBABA = round(COMB_UNIT + GLOVE_UNIT, 2)  # unit cost of both parts
+KIT_MOQ = 50
+KIT_MOQ_PRICE = round(
+    COMB_UNIT * COMB_MOQ + GLOVE_UNIT * GLOVE_MOQ, 2
+)  # full restock of 50 kits worth of parts
+
+# Snuffle (Alibaba app quote): $45.04/pc · MOQ 90
+SNUFFLE_UNIT = 45.04
+SNUFFLE_MOQ = 90
+SNUFFLE_MOQ_PRICE = round(SNUFFLE_UNIT * SNUFFLE_MOQ, 2)  # $4,053.60
+
+# Slow feeder (Alibaba app quote): $19.12/pc · MOQ 200
+SLOW_FEEDER_UNIT = 19.12
+SLOW_FEEDER_MOQ = 200
+SLOW_FEEDER_MOQ_PRICE = round(SLOW_FEEDER_UNIT * SLOW_FEEDER_MOQ, 2)  # $3,824.00
+
+# Nail grinder — Alibaba app quote $10.79/pc · MOQ 1
+NAIL_UNIT = 10.79
+NAIL_MOQ = 1
+NAIL_MOQ_PRICE = round(NAIL_UNIT * NAIL_MOQ, 2)
+
+
+def money(n: float) -> str:
+    """Always two decimals so numeric columns share the same width shape."""
+    if abs(n) >= 1000:
+        return f"${n:,.2f}"
+    if n < 0:
+        return f"-${abs(n):.2f}"
+    return f"${n:.2f}"
+
+
+def money_plain(n: float) -> str:
+    """Non-negative money; used in fixed-width range ends."""
+    n = max(0.0, n)
+    if n >= 1000:
+        return f"${n:,.2f}"
+    return f"${n:.2f}"
+
+
+def nobr(text: str) -> str:
+    """Keep a money string / range on a single visual line."""
+    glued = text.replace(" ", "\u00a0")
+    return f"<nobr>{glued}</nobr>"
+
+
+def keep_contribution(
+    sell: float,
+    alibaba: float,
+    to_us: float = TO_US_MED,
+    ship: float = SHIP_MED,
+) -> float:
+    """Keep after Alibaba, freight pads, Stripe, and returns."""
+    ship_collected = 0.0 if sell >= FREE_SHIP_AT else CUSTOMER_SHIP_FEE
+    charged = sell + ship_collected
+    stripe = charged * STRIPE_PCT + STRIPE_FIXED
+    returns = sell * RETURNS_PCT
+    return charged - alibaba - to_us - ship - stripe - returns
+
+
+def keep_range(sell: float, alibaba: float) -> str:
+    """Keep under heavy vs light freight; floor at $0 (no negative floors)."""
+    k_light = keep_contribution(sell, alibaba, TO_US_LOW, SHIP_LOW)
+    k_heavy = keep_contribution(sell, alibaba, TO_US_HIGH, SHIP_HIGH)
+    lo = max(0.0, min(k_heavy, k_light))
+    hi = max(0.0, max(k_heavy, k_light))
+    return f"{money_plain(lo)}{RANGE_JOIN}{money_plain(hi)}"
+
+
 
 STORE = [
     {
         "product": "Shedding Brush Kit",
-        "sell": 24.0,
-        "alibaba": BRUSH_KIT_ALIBABA,
-        "alibaba_label": f"${BRUSH_KIT_ALIBABA:.2f}†",
-        "landed": BRUSH_KIT_LANDED,  # to NestPaw
-        "outbound": 5.50,  # est. USPS to customer
-        "source": "Kinghon comb + 1 MHC glove",
+        "sell": KIT_SELL,
+        "alibaba": KIT_ALIBABA,
+        "alibaba_label": money(KIT_ALIBABA),
+        "moq_label": str(KIT_MOQ),
+        "moq_price": KIT_MOQ_PRICE,
+        "role": "kit",
+    },
+    {
+        "product": "Deshedding brush",
+        "sell": None,
+        "alibaba": COMB_UNIT,
+        "moq_label": str(COMB_MOQ),
+        "moq_price": round(COMB_UNIT * COMB_MOQ, 2),
+        "role": "component",
+    },
+    {
+        "product": "Grooming glove",
+        "sell": None,
+        "alibaba": GLOVE_UNIT,
+        "moq_label": str(GLOVE_MOQ),
+        "moq_price": GLOVE_MOQ_PRICE,
+        "role": "component",
     },
     {
         "product": "Forage Snuffle Mat",
-        "sell": 28.0,
-        "alibaba": 8.0,
-        "alibaba_label": "$8.00",
-        "landed": 14.0,
-        "outbound": 7.00,
-        "source": "Snuffle listing",
+        "sell": 69.0,
+        "alibaba": SNUFFLE_UNIT,
+        "moq_label": str(SNUFFLE_MOQ),
+        "moq_price": SNUFFLE_MOQ_PRICE,
     },
     {
         "product": "Silicone Slow Feeder Mat",
         "sell": 34.0,
-        "alibaba": 11.21,
-        "alibaba_label": "$11.21",
-        "landed": 18.0,
-        "outbound": 6.50,
-        "source": "Slow-feeder listing",
+        "alibaba": SLOW_FEEDER_UNIT,
+        "moq_label": str(SLOW_FEEDER_MOQ),
+        "moq_price": SLOW_FEEDER_MOQ_PRICE,
     },
     {
         "product": "Quiet Nail Grinder",
         "sell": 25.0,
-        "alibaba": 5.69,
-        "alibaba_label": "$5.69",
-        "landed": 11.0,
-        "outbound": 5.50,
-        "source": "Nail-grinder listing",
-    },
-    {
-        "product": "Calm Evening Bundle",
-        "sell": 38.0,
-        "alibaba": 12.0,
-        "alibaba_label": "$12.00*",
-        "landed": 20.0,
-        "outbound": 8.00,
-        "source": "Snuffle + lick (2 orders)",
-    },
-]
-
-
-def money(n: float) -> str:
-    return f"${n:.2f}"
-
-
-def contribution(item: dict) -> float:
-    """What NestPaw keeps on a solo-item order after outbound to customer."""
-    ship_collected = 0.0 if item["sell"] >= FREE_SHIP_AT else CUSTOMER_SHIP_FEE
-    charged = item["sell"] + ship_collected
-    stripe = charged * STRIPE_PCT + STRIPE_FIXED
-    returns = item["sell"] * RETURNS_PCT
-    return charged - item["landed"] - item["outbound"] - stripe - returns
-
-
-# One row per Alibaba SKU to buy (individual items — not NestPaw kits/bundles)
-ORDERS = [
-    {
-        "n": "01",
-        "name": "Hair Remove Comb",
-        "tag": f"{money(COMB_UNIT)} / piece · used in Shedding Brush Kit",
-        "listing": "Dog and Cat One-button Hair Remove Comb",
-        "producer": "Yiwu Kinghon Pet Products Co. Ltd.",
-        "badge": "Verified · 8 yrs",
-        "cost": money(COMB_UNIT),
-        "cost_note": "per piece",
-        "stats": "1,840 sold · 4.8/5 (573) · #11 Pet Cleaning · MOQ ~50",
-        "url": "https://www.alibaba.com/product-detail/Dog-and-Cat-One-button-Hair_1601126914170.html",
-    },
-    {
-        "n": "02",
-        "name": "Silicone Grooming Gloves",
-        "tag": (
-            f"{money(GLOVE_PACK_COST)} / pack of {GLOVE_PACK_QTY} "
-            f"({money(GLOVE_UNIT)}/pc) · used in Shedding Brush Kit"
-        ),
-        "listing": "MHC Customizable Size Silicone Grooming Gloves",
-        "producer": "Dongguan MHC Industrial Co. Ltd.",
-        "badge": f"1 unit = pack of {GLOVE_PACK_QTY}",
-        "cost": money(GLOVE_PACK_COST),
-        "cost_note": f"pack of {GLOVE_PACK_QTY} pcs",
-        "stats": f"50–99 tier @ {money(GLOVE_UNIT)}/pc · one pack covers {GLOVE_PACK_QTY} kits",
-        "url": "https://www.alibaba.com/product-detail/MHC-Customizable-Size-Silicone-Grooming-Gloves_1601358986188.html",
-    },
-    {
-        "n": "03",
-        "name": "Forage Snuffle Mat",
-        "tag": "$8.00 / piece · NestPaw $28 · also in Calm Evening Bundle",
-        "listing": "LS OEM Waterproof Interactive Dog Foraging Mat",
-        "producer": "Weihai L.S. / PEPPY BUDDIES",
-        "badge": "Custom Mfr · 5 yrs",
-        "cost": "$8.00",
-        "cost_note": "per piece",
-        "stats": "5.0/5 (128) · MOQ ~90–180",
-        "url": "https://www.alibaba.com/product-detail/LS-OEM-Waterproof-Interactive-Dog-Foraging_1600772908467.html",
-    },
-    {
-        "n": "04",
-        "name": "Silicone Slow-Feeder Mat",
-        "tag": "$11.21 / piece · NestPaw $34",
-        "listing": "OEM/ODM Food-Grade Eco Silicone Slow-Feeder Mat",
-        "producer": "Xiamen Hands Chain Silicone Co. Ltd.",
-        "badge": "Custom Mfr · 10 yrs",
-        "cost": "$11.21",
-        "cost_note": "per piece",
-        "stats": "4.9/5 (148) · silicone mat (not plastic maze)",
-        "url": "https://www.alibaba.com/product-detail/OEM-ODM-Wholesale-Food-Grade-Eco_1601762944691.html",
-    },
-    {
-        "n": "05",
-        "name": "Pet Nail Trimmer / Grinder",
-        "tag": "$5.69 / piece · NestPaw Quiet Nail Grinder $25",
-        "listing": "2-in-1 Pet Nail Trimmer / Grinder (USB · LED)",
-        "producer": "Shaanxi Green Bird Supply Chain Co. LTD.",
-        "badge": "Multispecialty · 1 yr",
-        "cost": "$5.69",
-        "cost_note": "per piece",
-        "stats": "4.9/5 (17) · MOQ from 1 · QC samples",
-        "url": "https://www.alibaba.com/product-detail/2-in-1-Pet-Nail-Trimmer_1601712074583.html",
-    },
-    {
-        "n": "06",
-        "name": "Silicone Lick Mat",
-        "tag": "$3.50 / piece · used in Calm Evening Bundle (not sold alone)",
-        "listing": "Custom Dog Lick Mat Silicone Pet Feeding Mat",
-        "producer": "Guangdong Yumingsheng Precision Mfg Co. Ltd.",
-        "badge": "Custom Mfr · 2 yrs",
-        "cost": "$3.50",
-        "cost_note": "per piece",
-        "stats": "4,617 sold · 4.7/5 (99) · #1 Pet Bowls",
-        "url": "https://www.alibaba.com/product-detail/Custom-Dog-Lick-Mat-Silicone-Pet_1601392779056.html",
+        "alibaba": NAIL_UNIT,
+        "moq_label": str(NAIL_MOQ),
+        "moq_price": NAIL_MOQ_PRICE,
     },
 ]
 
 
 def build_styles():
-    styles = getSampleStyleSheet()
-    styles.add(
-        ParagraphStyle(
-            name="DocTitle",
+    return {
+        "title": ParagraphStyle(
+            "DocTitle",
             fontName="Helvetica-Bold",
-            fontSize=20,
+            fontSize=22,
             textColor=MOSS,
-            leading=24,
-            spaceAfter=2,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Sub",
+            leading=26,
+            spaceAfter=4,
+        ),
+        "lede": ParagraphStyle(
+            "Lede",
+            fontName="Helvetica",
+            fontSize=10.5,
+            textColor=MUTED,
+            leading=14.5,
+            spaceAfter=4,
+        ),
+        "intro": ParagraphStyle(
+            "Intro",
             fontName="Helvetica",
             fontSize=9.5,
             textColor=MUTED,
-            leading=13,
-            spaceAfter=10,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="H",
-            fontName="Helvetica-Bold",
-            fontSize=12,
-            textColor=MOSS,
-            leading=15,
-            spaceBefore=2,
-            spaceAfter=3,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Intro",
-            fontName="Helvetica",
-            fontSize=8.5,
-            textColor=MUTED,
-            leading=11.5,
-            spaceAfter=6,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Footnote",
-            fontName="Helvetica",
-            fontSize=7.5,
-            textColor=MUTED,
-            leading=10,
-            spaceBefore=4,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Th",
+            leading=13.5,
+            spaceAfter=14,
+        ),
+        "tdB": ParagraphStyle(
+            "TdB",
             fontName="Helvetica-Bold",
             fontSize=8,
-            textColor=white,
+            textColor=INK,
             leading=10,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Td",
-            fontName="Helvetica",
-            fontSize=8.5,
-            textColor=INK,
-            leading=11,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="TdB",
-            fontName="Helvetica-Bold",
-            fontSize=8.5,
-            textColor=INK,
-            leading=11,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="TdRight",
-            fontName="Helvetica",
-            fontSize=8.5,
-            textColor=INK,
-            leading=11,
-            alignment=TA_RIGHT,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Num",
-            fontName="Helvetica-Bold",
-            fontSize=11,
-            textColor=MOSS_SOFT,
-            leading=14,
-            alignment=TA_CENTER,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardUse",
-            fontName="Helvetica-Bold",
-            fontSize=10,
-            textColor=INK,
-            leading=13,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardTag",
-            fontName="Helvetica",
-            fontSize=8,
-            textColor=MUTED,
-            leading=10,
-            spaceBefore=1,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardListing",
-            fontName="Helvetica-Bold",
-            fontSize=9,
-            textColor=INK,
-            leading=12,
-            spaceBefore=2,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardMeta",
-            fontName="Helvetica",
-            fontSize=8,
-            textColor=MUTED,
-            leading=11,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardCost",
-            fontName="Helvetica-Bold",
-            fontSize=10,
-            textColor=MOSS,
-            leading=12,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardCostNote",
+        ),
+        "tdComponent": ParagraphStyle(
+            "TdComponent",
             fontName="Helvetica",
             fontSize=7.5,
             textColor=MUTED,
             leading=9.5,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="CardStats",
-            fontName="Helvetica",
+            leftIndent=6,
+        ),
+        "num": ParagraphStyle(
+            "Num",
+            fontName="Courier",
             fontSize=8,
             textColor=INK,
-            leading=10.5,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="OrderLink",
+            leading=10,
+            alignment=TA_RIGHT,
+        ),
+        "numB": ParagraphStyle(
+            "NumB",
+            fontName="Courier-Bold",
+            fontSize=8,
+            textColor=INK,
+            leading=10,
+            alignment=TA_RIGHT,
+        ),
+        "numMute": ParagraphStyle(
+            "NumMute",
+            fontName="Courier",
+            fontSize=8,
+            textColor=MUTED,
+            leading=10,
+            alignment=TA_RIGHT,
+        ),
+        "range": ParagraphStyle(
+            "Range",
+            fontName="Courier",
+            fontSize=7.5,
+            textColor=MUTED,
+            leading=9.5,
+            alignment=TA_RIGHT,
+        ),
+        "rangeB": ParagraphStyle(
+            "RangeB",
+            fontName="Courier-Bold",
+            fontSize=7.5,
+            textColor=INK,
+            leading=9.5,
+            alignment=TA_RIGHT,
+        ),
+        "th": ParagraphStyle(
+            "Th",
             fontName="Helvetica-Bold",
             fontSize=8.5,
-            textColor=ACCENT,
-            leading=11,
-            alignment=TA_CENTER,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="FooterLeft",
-            fontName="Helvetica",
-            fontSize=7.5,
-            textColor=MUTED,
-            alignment=TA_LEFT,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="FooterRight",
-            fontName="Helvetica",
-            fontSize=7.5,
-            textColor=MUTED,
+            textColor=white,
+            leading=10.5,
+        ),
+        "thRight": ParagraphStyle(
+            "ThRight",
+            fontName="Helvetica-Bold",
+            fontSize=8.5,
+            textColor=white,
+            leading=10.5,
             alignment=TA_RIGHT,
-        )
-    )
-    return styles
+        ),
+        "section": ParagraphStyle(
+            "Section",
+            fontName="Helvetica-Bold",
+            fontSize=12,
+            textColor=MOSS,
+            leading=15,
+            spaceBefore=4,
+            spaceAfter=4,
+        ),
+        "chartIntro": ParagraphStyle(
+            "ChartIntro",
+            fontName="Helvetica",
+            fontSize=9,
+            textColor=MUTED,
+            leading=12.5,
+            spaceAfter=10,
+        ),
+        "legend": ParagraphStyle(
+            "Legend",
+            fontName="Helvetica",
+            fontSize=8.5,
+            textColor=MUTED,
+            leading=11,
+            spaceBefore=6,
+        ),
+    }
+
+
+MARGIN_X = 0.3 * inch
 
 
 def footer(canvas, doc):
@@ -394,182 +312,308 @@ def footer(canvas, doc):
     canvas.setStrokeColor(LINE)
     canvas.setLineWidth(0.5)
     y = 0.48 * inch
-    canvas.line(0.6 * inch, y, letter[0] - 0.6 * inch, y)
-    canvas.setFont("Helvetica", 7.5)
+    canvas.line(MARGIN_X, y, letter[0] - MARGIN_X, y)
+    canvas.setFont("Helvetica", 8)
     canvas.setFillColor(MUTED)
-    canvas.drawString(0.6 * inch, 0.3 * inch, "NestPaw sourcing catalog")
+    canvas.drawString(MARGIN_X, 0.28 * inch, "NestPaw · Product catalog")
     canvas.drawRightString(
-        letter[0] - 0.6 * inch,
-        0.3 * inch,
-        f"{date.today().isoformat()}  ·  {doc.page}",
+        letter[0] - MARGIN_X,
+        0.28 * inch,
+        f"{date.today().strftime('%b %d, %Y')}  ·  {doc.page}",
     )
     canvas.restoreState()
 
 
+def blank_cell(styles):
+    return Paragraph("—", styles["numMute"])
+
+
+def money_cell(amount: float, styles, bold: bool = False) -> Paragraph:
+    style = styles["numB"] if bold else styles["num"]
+    return Paragraph(nobr(money(amount)), style)
+
+
 def storefront_table(styles):
-    header = [
-        Paragraph(h, styles["Th"])
-        for h in [
-            "Product",
-            "Sell",
-            "Alibaba",
-            "To us",
-            "Ship→cust",
-            "Keep",
-            "How to source",
-        ]
+    # nobr + nbsp so headers never split ("To us", "MOQ $").
+    headers = [
+        ("Product", "th"),
+        ("Sell", "thRight"),
+        ("Alibaba", "thRight"),
+        ("MOQ", "thRight"),
+        ("MOQ\u00a0$", "thRight"),
+        ("To\u00a0us", "thRight"),
+        ("Ship", "thRight"),
+        ("Keep", "thRight"),
     ]
-    rows = [header]
+    rows = [
+        [Paragraph(nobr(label), styles[style]) for label, style in headers]
+    ]
+    row_bgs = []
+
     for item in STORE:
-        keep = contribution(item)
+        alibaba = item["alibaba"]
+        alibaba_label = item.get("alibaba_label") or money(alibaba)
+        role = item.get("role")
+        row_bgs.append(BG if role == "component" else PRODUCT_BG)
+
+        # Product names: non-breaking spaces so multi-word names stay one line
+        name = item["product"].replace(" ", "\u00a0")
+        if role == "component":
+            product_cell = Paragraph(nobr(f"· {name}"), styles["tdComponent"])
+        else:
+            product_cell = Paragraph(nobr(name), styles["tdB"])
+
+        if item.get("sell") is None:
+            sell_cell = blank_cell(styles)
+            keep_cell = blank_cell(styles)
+            to_us_cell = blank_cell(styles)
+            ship_cell = blank_cell(styles)
+        else:
+            sell = item["sell"]
+            sell_cell = money_cell(sell, styles)
+            keep_cell = Paragraph(nobr(keep_range(sell, alibaba)), styles["rangeB"])
+            to_us_cell = Paragraph(nobr(TO_US_RANGE), styles["range"])
+            ship_cell = Paragraph(nobr(SHIP_RANGE), styles["range"])
+
         rows.append(
             [
-                Paragraph(item["product"], styles["TdB"]),
-                Paragraph(money(item["sell"]).replace(".00", ""), styles["Td"]),
-                Paragraph(item["alibaba_label"], styles["Td"]),
-                Paragraph(money(item["landed"]), styles["Td"]),
-                Paragraph(money(item["outbound"]), styles["Td"]),
-                Paragraph(money(keep), styles["TdB"]),
-                Paragraph(item["source"], styles["Td"]),
+                product_cell,
+                sell_cell,
+                Paragraph(nobr(alibaba_label), styles["num"]),
+                Paragraph(nobr(item["moq_label"]), styles["num"]),
+                money_cell(item["moq_price"], styles),
+                to_us_cell,
+                ship_cell,
+                keep_cell,
             ]
         )
 
-    # Match full content width (letter − 0.6" × 2), same as order cards
+    # letter − 0.3" × 2 = 7.9" — sized so every cell fits one line (padding-aware)
     table = Table(
         rows,
         colWidths=[
-            1.85 * inch,
-            0.55 * inch,
-            0.7 * inch,
-            0.65 * inch,
-            0.75 * inch,
-            0.65 * inch,
-            2.15 * inch,
+            1.70 * inch,  # Product
+            0.60 * inch,  # Sell
+            0.68 * inch,  # Alibaba
+            0.45 * inch,  # MOQ
+            0.82 * inch,  # MOQ $
+            1.05 * inch,  # To us
+            1.05 * inch,  # Ship
+            1.05 * inch,  # Keep
         ],
         hAlign="LEFT",
     )
-    table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), MOSS),
-                ("BACKGROUND", (0, 1), (-1, -1), white),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, BG]),
-                ("LINEBELOW", (0, 0), (-1, 0), 0, MOSS),
-                ("LINEBELOW", (0, 1), (-1, -2), 0.4, LINE),
-                ("LINEBELOW", (0, -1), (-1, -1), 0.4, LINE),
-                ("BOX", (0, 0), (-1, -1), 0.6, RULE),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("ALIGN", (1, 1), (5, -1), "RIGHT"),
-            ]
-        )
-    )
+    style_cmds = [
+        ("BACKGROUND", (0, 0), (-1, 0), MOSS),
+        ("LINEBELOW", (0, 1), (-1, -2), 0.4, LINE),
+        ("LINEBELOW", (0, -1), (-1, -1), 0.4, LINE),
+        ("BOX", (0, 0), (-1, -1), 0.5, RULE),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (0, -1), 5),
+        ("RIGHTPADDING", (0, 0), (0, -1), 3),
+        ("LEFTPADDING", (1, 0), (-1, -1), 2),
+        ("RIGHTPADDING", (1, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, 0), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 7),
+        ("TOPPADDING", (0, 1), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+    ]
+    for i, bg in enumerate(row_bgs):
+        r = i + 1
+        style_cmds.append(("BACKGROUND", (0, r), (-1, r), bg))
+    table.setStyle(TableStyle(style_cmds))
     return table
 
 
-def order_card(item, styles):
-    """One Alibaba SKU as a readable block — content stays inside the card box."""
-    # Full content width inside page margins (letter − 0.6" × 2)
-    card_w = 7.3 * inch
-    pad = 8  # points — applied only on the outer card
-    inner_w = card_w - (2 * pad)
+# ── Outcome odds (Monte Carlo over freight) ──────────────────────────────────
 
-    tag = item["tag"]
+MC_N = 10_000
+MC_SEED = 42
+DOT_N = 48  # dots shown per product row
 
-    # Title row: number + item name (+ price / usage note under title)
-    title_bits = [Paragraph(item["name"], styles["CardUse"])]
-    if tag:
-        title_bits.append(Paragraph(tag, styles["CardTag"]))
 
-    top = Table(
-        [[Paragraph(item["n"], styles["Num"]), title_bits]],
-        colWidths=[0.42 * inch, inner_w - 0.42 * inch],
-    )
-    top.setStyle(
-        TableStyle(
-            [
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-                ("TOPPADDING", (0, 0), (-1, -1), 0),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-            ]
+def sold_products() -> list[dict]:
+    return [item for item in STORE if item.get("sell") is not None]
+
+
+def simulate_keeps(sell: float, alibaba: float, n: int = MC_N, seed: int = MC_SEED):
+    rng = random.Random(seed + hash((sell, alibaba)) % 10_000)
+    keeps = []
+    for _ in range(n):
+        to_us = rng.uniform(TO_US_LOW, TO_US_HIGH)
+        ship = rng.uniform(SHIP_LOW, SHIP_HIGH)
+        keeps.append(keep_contribution(sell, alibaba, to_us, ship))
+    return keeps
+
+
+def outcome_stats(keeps: list[float]) -> dict:
+    n = len(keeps)
+    wins = sum(1 for k in keeps if k > 0)
+    losses = n - wins
+    ordered = sorted(keeps)
+    return {
+        "n": n,
+        "profit_pct": 100.0 * wins / n,
+        "loss_pct": 100.0 * losses / n,
+        "median": ordered[n // 2],
+        "mean": sum(keeps) / n,
+        "dot_keeps": ordered[:: max(1, n // DOT_N)][:DOT_N],
+    }
+
+
+def outcome_odds_drawing(width: float) -> Drawing:
+    """Per product: label, sorted keep dots (loss→profit), profit/loss %."""
+    items = sold_products()
+    stats = []
+    for item in items:
+        keeps = simulate_keeps(item["sell"], item["alibaba"])
+        stats.append((item, outcome_stats(keeps)))
+
+    row_h = 36
+    top_pad = 8
+    bot_pad = 18
+    height = top_pad + bot_pad + row_h * len(stats)
+    d = Drawing(width, height)
+
+    # Axis bounds from all sample dots (so rows share scale)
+    all_k = [k for _, st in stats for k in st["dot_keeps"]]
+    k_min = min(all_k + [-2.0])
+    k_max = max(all_k + [2.0])
+    # Expand a little
+    pad = (k_max - k_min) * 0.08 or 1.0
+    k_min -= pad
+    k_max += pad
+
+    label_w = 1.55 * inch
+    pct_w = 1.35 * inch
+    plot_x0 = label_w + 6
+    plot_x1 = width - pct_w - 4
+    plot_w = plot_x1 - plot_x0
+    zero_x = plot_x0 + (0 - k_min) / (k_max - k_min) * plot_w
+
+    # Shared zero axis (behind dots)
+    d.add(
+        Line(
+            zero_x,
+            bot_pad - 4,
+            zero_x,
+            height - top_pad + 2,
+            strokeColor=RULE,
+            strokeWidth=0.8,
+            strokeDashArray=[2, 2],
         )
     )
 
-    listing = Paragraph(item["listing"], styles["CardListing"])
-    meta = Paragraph(
-        f'{item["producer"]}  ·  {item["badge"]}',
-        styles["CardMeta"],
-    )
+    for i, (item, st) in enumerate(stats):
+        y_mid = height - top_pad - row_h * i - row_h / 2
 
-    cost_cell = [
-        Paragraph(item["cost"], styles["CardCost"]),
-        Paragraph(item["cost_note"], styles["CardCostNote"]),
-    ]
-    stats_cell = Paragraph(item["stats"], styles["CardStats"])
-    link_cell = Paragraph(
-        f'<link href="{item["url"]}">Order on Alibaba →</link>',
-        styles["OrderLink"],
-    )
+        # Alternating row wash
+        if i % 2 == 0:
+            d.add(
+                Rect(
+                    0,
+                    y_mid - row_h / 2 + 2,
+                    width,
+                    row_h - 4,
+                    fillColor=BG,
+                    strokeColor=None,
+                )
+            )
 
-    # Bottom bar: three equal visual cells, all inside the card
-    cost_w = 1.4 * inch
-    link_w = 1.85 * inch
-    stats_w = inner_w - cost_w - link_w
-    bottom = Table(
-        [[cost_cell, stats_cell, link_cell]],
-        colWidths=[cost_w, stats_w, link_w],
+        # Product name — shorten long display if needed for one line
+        short_name = {
+            "Silicone Slow Feeder Mat": "Slow Feeder Mat",
+            "Quiet Nail Grinder": "Nail Grinder",
+            "Forage Snuffle Mat": "Snuffle Mat",
+            "Shedding Brush Kit": "Brush Kit",
+        }.get(item["product"], item["product"])
+        d.add(
+            String(
+                4,
+                y_mid - 3,
+                short_name,
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                fillColor=INK,
+            )
+        )
+
+        # Dots sorted left (more loss) → right (more profit)
+        r = 3.2
+        for k in st["dot_keeps"]:
+            x = plot_x0 + (k - k_min) / (k_max - k_min) * plot_w
+            if k > 0.15:
+                fill = PROFIT
+            elif k < -0.15:
+                fill = LOSS
+            else:
+                fill = DOT_ZERO
+            d.add(
+                Circle(
+                    x,
+                    y_mid,
+                    r,
+                    fillColor=fill,
+                    strokeColor=white,
+                    strokeWidth=0.4,
+                )
+            )
+
+        # Profit / loss percentages — glued so they stay one line each
+        d.add(
+            String(
+                width - pct_w + 2,
+                y_mid + 4,
+                f"{st['profit_pct']:.0f}% profit",
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                fillColor=PROFIT,
+            )
+        )
+        d.add(
+            String(
+                width - pct_w + 2,
+                y_mid - 8,
+                f"{st['loss_pct']:.0f}% loss",
+                fontName="Helvetica",
+                fontSize=8,
+                fillColor=LOSS,
+            )
+        )
+
+    # Axis labels under last row
+    d.add(
+        String(
+            plot_x0,
+            4,
+            "← more loss",
+            fontName="Helvetica",
+            fontSize=7,
+            fillColor=MUTED,
+        )
     )
-    bottom.setStyle(
-        TableStyle(
-            [
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("BACKGROUND", (0, 0), (-1, 0), BG),
-                ("BOX", (0, 0), (-1, 0), 0.5, LINE),
-                ("LINEAFTER", (0, 0), (0, 0), 0.5, LINE),
-                ("LINEAFTER", (1, 0), (1, 0), 0.5, LINE),
-                ("LEFTPADDING", (0, 0), (-1, -1), 7),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-            ]
+    d.add(
+        String(
+            zero_x - 10,
+            4,
+            "$0",
+            fontName="Helvetica",
+            fontSize=7,
+            fillColor=MUTED,
+        )
+    )
+    d.add(
+        String(
+            plot_x1 - 52,
+            4,
+            "more profit →",
+            fontName="Helvetica",
+            fontSize=7,
+            fillColor=MUTED,
         )
     )
 
-    body = Table(
-        [[top], [listing], [meta], [Spacer(1, 4)], [bottom]],
-        colWidths=[inner_w],
-    )
-    body.setStyle(
-        TableStyle(
-            [
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-                ("TOPPADDING", (0, 0), (-1, -1), 1),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-            ]
-        )
-    )
-
-    card = Table([[body]], colWidths=[card_w])
-    card.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, -1), BG_CARD),
-                ("BOX", (0, 0), (-1, -1), 0.7, RULE),
-                ("LINEBEFORE", (0, 0), (0, -1), 3.2, MOSS_SOFT),
-                ("LEFTPADDING", (0, 0), (-1, -1), pad),
-                ("RIGHTPADDING", (0, 0), (-1, -1), pad),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ]
-        )
-    )
-    return KeepTogether([card, Spacer(1, 6)])
+    return d
 
 
 def main():
@@ -577,70 +621,52 @@ def main():
     doc = SimpleDocTemplate(
         str(OUT),
         pagesize=letter,
-        leftMargin=0.6 * inch,
-        rightMargin=0.6 * inch,
-        topMargin=0.5 * inch,
+        leftMargin=MARGIN_X,
+        rightMargin=MARGIN_X,
+        topMargin=0.55 * inch,
         bottomMargin=0.65 * inch,
     )
 
+    content_w = letter[0] - 2 * MARGIN_X
+
     story = []
-    story.append(Paragraph("NestPaw — what we sell &amp; where to order", styles["DocTitle"]))
+    story.append(Paragraph("NestPaw product catalog", styles["title"]))
     story.append(
         Paragraph(
-            f"U.S. storefront · Alibaba wholesale · Updated {date.today().strftime('%b %d, %Y')}. "
-            "Blue links open the Alibaba product page.",
-            styles["Sub"],
+            f"U.S. storefront · Alibaba wholesale · {date.today().strftime('%B %d, %Y')}",
+            styles["lede"],
         )
     )
-
-    story.append(Paragraph("1 · NestPaw storefront", styles["H"]))
     story.append(
         Paragraph(
-            "Retail prices, cost to NestPaw, estimated outbound to customer, and what we keep "
-            "after Stripe + returns (solo-item orders).",
-            styles["Intro"],
+            "Retail price, unit Alibaba cost, MOQ restock cash, and contribution ranges. "
+            "To us, Ship, and Keep are planning ranges (light freight → heavy freight). "
+            "Keep floors at $0.00 when heavy freight would erase contribution. "
+            "Brush and glove stay restock lines; NestPaw sells them as the Shedding Brush Kit.",
+            styles["intro"],
         )
     )
     story.append(storefront_table(styles))
+    story.append(Spacer(1, 18))
+
+    story.append(Paragraph("Chance of profit vs loss", styles["section"]))
     story.append(
         Paragraph(
-            "*Calm Evening Alibaba = snuffle $8 + lick $3.50. "
-            f"†Brush kit Alibaba = comb {money(COMB_UNIT)} + 1 glove {money(GLOVE_UNIT)} "
-            f"(MHC unit = pack of {GLOVE_PACK_QTY} for {money(GLOVE_PACK_COST)} cash → "
-            f"{money(GLOVE_UNIT)}/kit). "
-            "To us = cost at NestPaw (Alibaba + inbound). "
-            "Ship→cust = est. US outbound (self-ship). "
-            "Keep = (sell + ship fee) − to us − outbound − Stripe (2.9% + $0.30) − 3% returns. "
-            f"Ship fee = $0 if sell ≥ ${FREE_SHIP_AT:.0f}, else ${CUSTOMER_SHIP_FEE:.2f}. "
-            "Confirm live Alibaba + carrier quotes before bulk.",
-            styles["Footnote"],
+            "Each unit’s Keep depends on unknown freight. We treat inbound To us as "
+            f"uniform {TO_US_RANGE} and US Ship as uniform {SHIP_RANGE} "
+            f"(independent draws, {MC_N:,} simulations). "
+            "Each green or red dot is one freight draw for that SKU, ordered left→right by Keep. "
+            "Green = profit after fees; red = loss. Dash = break-even.",
+            styles["chartIntro"],
         )
     )
-
-    story.append(Spacer(1, 8))
-    story.append(HRFlowable(width="100%", thickness=0.6, color=LINE, spaceAfter=6))
-    story.append(Paragraph("2 · Alibaba order list", styles["H"]))
+    story.append(outcome_odds_drawing(content_w))
     story.append(
         Paragraph(
-            "One card per Alibaba item to buy — unit price shown on each card. "
-            "Shedding Brush Kit needs #01 comb + #02 glove pack. "
-            "Calm Evening Bundle needs #03 snuffle + #06 lick mat.",
-            styles["Intro"],
-        )
-    )
-
-    for item in ORDERS:
-        story.append(order_card(item, styles))
-
-    story.append(Spacer(1, 4))
-    story.append(HRFlowable(width="100%", thickness=0.6, color=LINE, spaceAfter=6))
-    story.append(
-        Paragraph(
-            f"Free shipping on NestPaw orders over ${FREE_SHIP_AT:.0f} "
-            f"(${CUSTOMER_SHIP_FEE:.2f} under). "
-            "Alibaba costs are verified wholesale anchors, not always the public list price. "
-            "Outbound estimates are planning figures — replace with real USPS/UPS quotes.",
-            styles["Footnote"],
+            "Assumption only — not measured carrier rates. Solo-item order, Stripe 2.9%+$0.30, "
+            f"3% returns pad, ship fee ${CUSTOMER_SHIP_FEE:.2f} when sell is under ${FREE_SHIP_AT:.0f}. "
+            "Brush kit components are omitted (sold only as the kit).",
+            styles["legend"],
         )
     )
 

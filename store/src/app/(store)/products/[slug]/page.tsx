@@ -179,8 +179,21 @@ export default async function ProductPage({ params }: { params: Params }) {
               <div>
                 <p className="font-semibold text-ink">What is your return policy?</p>
                 <p className="mt-1">
-                  30-day returns on unused or defective items. See Shipping &amp;
-                  returns for details.
+                  30-day returns on unused or defective items. See{" "}
+                  <Link
+                    href="/shipping"
+                    className="font-medium text-moss underline-offset-2 hover:underline"
+                  >
+                    Shipping &amp; returns
+                  </Link>{" "}
+                  for details, or{" "}
+                  <Link
+                    href="/returns"
+                    className="font-medium text-moss underline-offset-2 hover:underline"
+                  >
+                    start a return request
+                  </Link>
+                  .
                 </p>
               </div>
               <div>

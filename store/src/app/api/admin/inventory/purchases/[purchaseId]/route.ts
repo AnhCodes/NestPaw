@@ -7,7 +7,7 @@ import { updateInventoryPurchase } from "@/lib/orders";
 
 async function requireAdmin() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
-  return verifyAdminSessionToken(token);
+  return await verifyAdminSessionToken(token);
 }
 
 type PurchaseBody = {

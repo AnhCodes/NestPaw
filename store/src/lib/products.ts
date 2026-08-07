@@ -65,7 +65,8 @@ export const products: Product[] = [
     tagline: "Ten quiet minutes, earned through the nose.",
     description:
       "A washable foraging mat that turns mealtime treats into a calming scent game. Built for rainy evenings, restless energy, and dogs who need a job indoors.",
-    price: 28,
+    // Alibaba ~$45/pc — $28 was underwater after Stripe/returns; $69 leaves room before freight.
+    price: 69,
     stock: 0,
     category: "calm",
     image: "/products/nestpaw-forage-snuffle-mat-hero.png",
@@ -190,4 +191,4 @@ export function formatStock(product: Product) {
 }
 
 export const FREE_SHIPPING_THRESHOLD = 40;
-export const FLAT_SHIPPING = 4.95;
+export const FLAT_SHIPPING = 5.5;

@@ -12,11 +12,11 @@ Use this for every paid order until a 3PL is intentionally adopted later.
 - [x] One test label bought (printed + refunded; ~$7.56 for ~1 lb 10 oz poly mailer)
 - [x] Packing supplies on hand (boxes or poly mailers, filler, tape)
 - [x] Return-address labels ready (NestPaw / your ship-from address)
-- [ ] Printed calm tips cards ready (`store/public/packaging/nestpaw-calm-tips-card.png`)
+- [ ] Printed calm tips cards ready — artwork final at `store/public/packaging/nestpaw-calm-tips-card.png` (print 4×6 cardstock)
 - [ ] Thermal labels optional later; paper labels from Pirate Ship are fine for week 1
 - [ ] Bookmark [https://shopnestpaw.com/admin/orders](https://shopnestpaw.com/admin/orders)
 
-**Target postage:** keep single-item Ground Advantage near the **$4.95** flat shipping rate when possible; free-shipping carts ($40+) are funded by product margin.
+**Target postage:** keep single-item Ground Advantage near the **$5.50** flat shipping rate when possible; free-shipping carts ($40+) are funded by product margin.
 
 ---
 
@@ -105,7 +105,7 @@ NestPaw will email the customer from `hello@shopnestpaw.com` with tracking and a
 | No unfulfilled orders | Confirm Stripe webhook created the order; check `/admin/orders` after a paid checkout |
 | Address looks wrong | Message the customer via Contact / email before buying postage |
 | Tracking email did not send | Status must be `shipped` **and** tracking filled; check Resend logs for `hello@shopnestpaw.com` |
-| Postage much over $4.95 | Re-check dimensions/weight; consider poly mailer; note for pricing later |
+| Postage much over $5.50 | Re-check dimensions/weight; consider poly mailer; note for pricing later |
 | Package damaged in transit | Ask for photos within 7 days; replace or refund per shipping policy |
 
 ---

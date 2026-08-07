@@ -39,11 +39,11 @@ npm run db:seed-order   # sample paid order for admin fulfillment testing
 
 ## Admin
 
-1. Set `DATABASE_URL`, `ADMIN_PASSWORD` (and optional `ADMIN_SESSION_SECRET`) in `.env.local`
+1. Set `DATABASE_URL`, a long random `ADMIN_PASSWORD`, and `ADMIN_SESSION_SECRET` in `.env.local`
 2. Open [http://localhost:3000/admin](http://localhost:3000/admin)
 3. Manage orders, customers, inventory, and revenue overview
 
-Production: accept Neon Marketplace terms, then `vercel integration add neon --plan free_v3`, and set admin env vars on Vercel.
+Production: accept Neon Marketplace terms, then `vercel integration add neon --plan free_v3`, and set admin env vars on Vercel (use a separate `ADMIN_SESSION_SECRET`, not the same string as the password).
 
 ## What's included
 

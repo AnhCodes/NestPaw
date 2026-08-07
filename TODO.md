@@ -2,7 +2,8 @@
 
 ## While waiting on stock
 
-- [ ] Print the dog calm tips card to include in each package
+- [ ] Print the dog calm tips card (4×6 cardstock from `store/public/packaging/nestpaw-calm-tips-card.png` — artwork is final)
+- [x] Harden storefront / admin security (rate limits, session verification, `/admin` noindex)
 
 ## When stock arrives — soft launch, test the whole pipeline start to finish
 

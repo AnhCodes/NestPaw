@@ -340,11 +340,11 @@ def build():
                     ],
                     [
                         "Customer shipping",
-                        f"$4.95 under $40 · free over $40",
+                        f"$5.50 under $40 · free over $40",
                     ],
                     [
                         "Postage target",
-                        f"Keep single-item Ground Advantage near $4.95; free-shipping carts funded by margin",
+                        f"Keep single-item Ground Advantage near $5.50; free-shipping carts funded by margin",
                     ],
                     [
                         "Site promise",
@@ -381,7 +381,7 @@ def build():
             ),
             Spacer(1, 4),
             callout(
-                "<b>Catalog SKUs:</b> Shedding Brush Kit ($24) · Forage Snuffle Mat ($28) · "
+                "<b>Catalog SKUs:</b> Shedding Brush Kit ($24) · Forage Snuffle Mat ($69) · "
                 "Silicone Slow Feeder Mat ($34) · Quiet Nail Grinder ($25) · Suction Lick Mat ($14). "
                 f"Kits use warehouse parts (brush kit = deshedding brush + grooming {nb('glove')}).",
                 s,
@@ -603,7 +603,7 @@ def build():
             ),
             Spacer(1, 4),
             callout(
-                "Target: single-item Ground Advantage postage near the <b>$4.95</b> flat rate "
+                "Target: single-item Ground Advantage postage near the <b>$5.50</b> flat rate "
                 "customers pay. Free-shipping carts ($40+) are funded by product margin. If postage "
                 f"runs high, re-check weight/dimensions and prefer a poly {nb('mailer.')}",
                 s,
@@ -736,7 +736,7 @@ def build():
                     "Need status=shipped AND tracking filled; check Resend for orders@",
                 ],
                 [
-                    "Postage much over $4.95",
+                    "Postage much over $5.50",
                     "Re-check weight/dimensions; try a poly mailer; note for pricing",
                 ],
                 [

@@ -19,10 +19,12 @@ NestPaw/
 │   ├── PACK-SHIP.md                  # Per-order pack → Pirate Ship → USPS → admin
 │   ├── pdfs/
 │   │   ├── nestpaw-product-catalog.pdf
-│   │   └── nestpaw-fulfillment-pipeline.pdf
+│   │   ├── nestpaw-fulfillment-pipeline.pdf
+│   │   └── nestpaw-investor-brief.pdf
 │   └── scripts/
 │       ├── generate-catalog.py
-│       └── generate-pipeline-pdf.py
+│       ├── generate-pipeline-pdf.py
+│       └── generate-investor-brief.py
 └── store/                            # Next.js storefront + /admin
 ```
 
@@ -39,7 +41,7 @@ NestPaw/
 | Email | Resend (`hello@shopnestpaw.com`) |
 | Supply | CJ / Alibaba samples → Alibaba bulk for winners |
 | Fulfillment | Self-ship week 1 (USPS), 3PL later if needed |
-| Shipping | $4.95 under $40 · free over $40 |
+| Shipping | $5.50 under $40 · free over $40 |
 | Catalog | Brush kit, snuffle mat, slow feeder, nail grinder, lick mat |
 
 ---
@@ -68,14 +70,14 @@ Follow **[PACK-SHIP.md](business/PACK-SHIP.md)** for the full checklist. Short v
 
 1. Open the order in `/admin/orders/[id]`.
 2. Pack the product(s), tips card, and ship via USPS Ground Advantage through Pirate Ship.
-3. Aim for all-in postage near the $4.95 flat rate on single orders, funded by margin on free-shipping carts.
+3. Aim for all-in postage near the $5.50 flat rate on single orders, funded by margin on free-shipping carts.
 4. In admin, set fulfillment to **shipped** and paste the tracking number (triggers the customer email).
 
 ### 5. Notify and deliver
 
 1. NestPaw emails the customer from `hello@shopnestpaw.com` with tracking and a USPS link.
 2. Most U.S. deliveries arrive in about 5 to 8 business days.
-3. Returns / issues come through the Contact page and are handled in admin + Stripe.
+3. Returns / issues come through [/returns](https://shopnestpaw.com/returns) or Contact, then admin + Stripe.
 
 
 ```text
@@ -125,6 +127,7 @@ See `store/.env.example` for the full list. Key ones:
 | `CONTACT_FROM_EMAIL` | Verified sender, e.g. `NestPaw <hello@shopnestpaw.com>` |
 | `CONTACT_TO_EMAIL` | Inbox for contact form + shipping reply-to |
 | `ADMIN_PASSWORD` | `/admin` login |
+| `ADMIN_SESSION_SECRET` | Separate session signing secret (recommended in production) |
 
 ---
 
@@ -132,6 +135,6 @@ See `store/.env.example` for the full list. Key ones:
 
 See **[TODO.md](TODO.md)** for the live checklist. Immediate focus:
 
-1. Finish Alibaba sample orders and QA.
-2. Smoke-test checkout, admin, and Resend shipping email.
+1. Print calm tips cards (4×6) while waiting on stock.
+2. Finish Alibaba sample orders and QA.
 3. Soft-launch and fulfill manually from `/admin/orders`.

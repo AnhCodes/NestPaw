@@ -21,7 +21,7 @@ export default function ShippingPage() {
         <h2 className="font-display text-2xl text-ink">Shipping</h2>
         <p>
           Free shipping on U.S. orders over $40. Orders under $40 ship for a
-          flat $4.95. We typically dispatch within 24 hours when items are in
+          flat $5.50. We typically dispatch within 24 hours when items are in
           stock. Most deliveries arrive in 5 to 8 business days depending on
           destination and carrier.
         </p>
@@ -44,23 +44,34 @@ export default function ShippingPage() {
         <h2 className="font-display text-2xl text-ink">Returns</h2>
         <p>
           We offer a 30-day return window for unused items in original condition,
-          and for defective products. Contact us with your order number to start
-          a return. Refunds are issued to the original payment method after we
-          receive and review the return.
+          and for defective products. Refunds are issued to the original payment
+          method after we receive and review the return.
         </p>
         <p>
           Opened consumables and heavily used items may not qualify unless
           defective. If something arrives damaged, send photos within 7 days and
           we&apos;ll make it right.
         </p>
+        <p>
+          To start a return, use the return request form with your order number
+          and the email from checkout.
+        </p>
       </section>
 
-      <Link
-        href="/contact"
-        className="mt-10 inline-flex bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
-      >
-        Contact support
-      </Link>
+      <div className="mt-10 flex flex-wrap gap-3">
+        <Link
+          href="/returns"
+          className="inline-flex bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+        >
+          Submit a return request
+        </Link>
+        <Link
+          href="/contact"
+          className="inline-flex border border-moss/25 bg-white/70 px-6 py-3.5 text-sm font-medium text-ink transition hover:border-moss/40 hover:bg-white"
+        >
+          Contact support
+        </Link>
+      </div>
     </div>
   );
 }

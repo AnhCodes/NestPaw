@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitStorefrontReturnRequest } from "@/lib/orders";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 type ContactBody = {
   name?: string;
@@ -11,6 +12,22 @@ type ContactBody = {
 };
 
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  const limited = rateLimit({
+    key: `contact:${ip}`,
+    limit: 8,
+    windowMs: 10 * 60 * 1000,
+  });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(limited.retryAfterSec) },
+      },
+    );
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   // Resend's free test sender is case-sensitive about the recipient address.
   const to = process.env.CONTACT_TO_EMAIL?.trim().toLowerCase();
@@ -66,6 +83,21 @@ export async function POST(request: Request) {
   }
 
   if (inquiryType === "return-request") {
+    const returnLimited = rateLimit({
+      key: `contact-return:${ip}`,
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (!returnLimited.ok) {
+      return NextResponse.json(
+        { error: "Too many return requests. Please try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(returnLimited.retryAfterSec) },
+        },
+      );
+    }
+
     const result = await submitStorefrontReturnRequest({
       orderId: orderId!,
       name,

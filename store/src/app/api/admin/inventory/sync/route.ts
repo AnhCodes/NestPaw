@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
-  return verifyAdminSessionToken(token);
+  return await verifyAdminSessionToken(token);
 }
 
 export async function POST(request: Request) {

@@ -23,7 +23,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
-  if (!verifyAdminSessionToken(token)) {
+  if (!(await verifyAdminSessionToken(token))) {
     redirect("/admin/login");
   }
 

@@ -284,17 +284,24 @@ export async function submitStorefrontReturnRequest(input: {
     .where(eq(orders.id, input.orderId))
     .limit(1);
 
+  // Same client message for missing order vs email mismatch to avoid
+  // order/email enumeration when an order id is known.
+  const unverifiedError =
+    "We couldn't verify that order number and email combination.";
+
   if (!row) {
+    console.info("[returns] order not found");
     return {
       ok: false as const,
-      error: "We couldn't find that order number. Please check it and try again.",
+      error: unverifiedError,
     };
   }
 
   if (row.customer.email.trim().toLowerCase() !== normalizedEmail) {
+    console.info("[returns] email mismatch for order");
     return {
       ok: false as const,
-      error: "That email doesn't match the order number entered.",
+      error: unverifiedError,
     };
   }
 

@@ -12,7 +12,7 @@ export default async function AdminLoginPage({
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
-  if (verifyAdminSessionToken(token)) {
+  if (await verifyAdminSessionToken(token)) {
     redirect("/admin");
   }
 
