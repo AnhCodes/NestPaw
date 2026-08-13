@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { formatPrice } from "@/lib/products";
 
 export type PurchaseLogItemView = {
@@ -88,7 +89,7 @@ function rangeForPreset(preset: DatePresetId) {
 
 function PurchaseCard({ purchase }: { purchase: PurchaseLogView }) {
   return (
-    <article className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
+    <article className="admin-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-medium text-[color:var(--admin-fg)]">{purchase.vendor}</p>
@@ -102,7 +103,7 @@ function PurchaseCard({ purchase }: { purchase: PurchaseLogView }) {
           </p>
           <Link
             href={`/admin/inventory/purchases/${purchase.id}`}
-            className="border border-[color:var(--admin-border)] px-2.5 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
+            className="rounded-md border border-[color:var(--admin-border)] px-2.5 py-1.5 text-xs font-semibold text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
           >
             Edit
           </Link>
@@ -112,7 +113,7 @@ function PurchaseCard({ purchase }: { purchase: PurchaseLogView }) {
         {purchase.items.map((item) => (
           <span
             key={item.id}
-            className="border border-[color:var(--admin-border)] px-2 py-1 text-xs text-[color:var(--admin-muted)]"
+            className="rounded-md border border-[color:var(--admin-border)] px-2 py-1 text-xs text-[color:var(--admin-muted)]"
           >
             {item.name}
             {` x${item.quantity}`}
@@ -196,7 +197,7 @@ export function PurchaseLogsSection({
 
   return (
     <>
-      <section className="mt-8 border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
+      <section className="admin-card mt-8 overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <button
             type="button"
@@ -208,10 +209,10 @@ export function PurchaseLogsSection({
               {expanded ? "▾" : "▸"}
             </span>
             <span>
-              <span className="block font-display text-2xl font-semibold text-[color:var(--admin-fg)]">
+              <span className="block text-base font-semibold text-[color:var(--admin-fg)]">
                 Recent purchase logs
               </span>
-              <span className="mt-1 block text-xs uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
+              <span className="mt-1 block text-xs text-[color:var(--admin-subtle)]">
                 {purchases.length} total · {recent.length} recent
               </span>
             </span>
@@ -219,7 +220,7 @@ export function PurchaseLogsSection({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="border border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] px-3 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
+            className="rounded-md border border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] px-3 py-2 text-xs font-semibold text-[color:var(--admin-muted)] transition hover:bg-[var(--admin-hover)] hover:text-[color:var(--admin-fg)]"
           >
             View all logs
           </button>
@@ -227,7 +228,7 @@ export function PurchaseLogsSection({
         {expanded ? (
           <div className="space-y-4 border-t border-[color:var(--admin-border)] px-5 py-4">
             {recent.length === 0 ? (
-              <div className="border border-dashed border-[color:var(--admin-border)] p-5 text-sm text-[color:var(--admin-muted)]">
+              <div className="admin-card border-dashed p-5 text-sm text-[color:var(--admin-muted)]">
                 No purchase logs yet.
               </div>
             ) : (
@@ -239,8 +240,9 @@ export function PurchaseLogsSection({
         ) : null}
       </section>
 
-      {open ? (
-        <div className="fixed inset-0 z-50 flex justify-end">
+      {open
+        ? createPortal(
+            <div className="fixed inset-0 z-[80] flex justify-end">
           <button
             type="button"
             aria-label="Close purchase logs"
@@ -250,7 +252,7 @@ export function PurchaseLogsSection({
           <aside className="relative flex h-full w-full max-w-xl flex-col border-l border-[color:var(--admin-border)] bg-[var(--admin-bg)] shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-[color:var(--admin-border)] px-5 py-4">
               <div>
-                <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">
+                <h2 className="text-lg font-semibold text-[color:var(--admin-fg)]">
                   All purchase logs
                 </h2>
                 <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
@@ -260,7 +262,7 @@ export function PurchaseLogsSection({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="border border-[color:var(--admin-border)] px-3 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] transition hover:text-[color:var(--admin-fg)]"
+                className="rounded-md border border-[color:var(--admin-border)] px-3 py-2 text-xs font-semibold text-[color:var(--admin-muted)] transition hover:text-[color:var(--admin-fg)]"
               >
                 Close
               </button>
@@ -273,7 +275,7 @@ export function PurchaseLogsSection({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Vendor, notes, item name..."
-                  className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none placeholder:text-[color:var(--admin-subtle)] focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                  className="admin-input"
                 />
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -290,7 +292,7 @@ export function PurchaseLogsSection({
                         setDateTo(range.to);
                       }
                     }}
-                    className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                    className="admin-input"
                   >
                     {datePresets.map((option) => (
                       <option key={option.id} value={option.id}>
@@ -309,7 +311,7 @@ export function PurchaseLogsSection({
                         setDatePreset("custom");
                         setDateFrom(e.target.value);
                       }}
-                      className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                      className="admin-input"
                     />
                   </label>
                   <label className="block text-sm text-[color:var(--admin-fg)]">
@@ -321,7 +323,7 @@ export function PurchaseLogsSection({
                         setDatePreset("custom");
                         setDateTo(e.target.value);
                       }}
-                      className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                      className="admin-input"
                     />
                   </label>
                 </div>
@@ -334,7 +336,7 @@ export function PurchaseLogsSection({
                     onChange={(e) =>
                       setVendor(e.target.value as (typeof vendors)[number])
                     }
-                    className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                    className="admin-input"
                   >
                     {vendors.map((option) => (
                       <option key={option} value={option}>
@@ -348,7 +350,7 @@ export function PurchaseLogsSection({
                   <select
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
-                    className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                    className="admin-input"
                   >
                     <option value="All">All</option>
                     {sectionLabels.map((label) => (
@@ -363,7 +365,7 @@ export function PurchaseLogsSection({
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value as SortId)}
-                    className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
+                    className="admin-input"
                   >
                     {sorts.map((option) => (
                       <option key={option.id} value={option.id}>
@@ -377,7 +379,7 @@ export function PurchaseLogsSection({
 
             <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
               {filtered.length === 0 ? (
-                <div className="border border-dashed border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5 text-sm text-[color:var(--admin-muted)]">
+                <div className="admin-card border-dashed p-5 text-sm text-[color:var(--admin-muted)]">
                   No purchase logs match these filters.
                 </div>
               ) : (
@@ -387,8 +389,10 @@ export function PurchaseLogsSection({
               )}
             </div>
           </aside>
-        </div>
-      ) : null}
+        </div>,
+            document.querySelector(".admin-app") ?? document.body,
+          )
+        : null}
     </>
   );
 }

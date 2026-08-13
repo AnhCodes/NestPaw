@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { InventoryPageActions } from "@/components/add-inventory-item-form";
 import {
   PurchaseLogsSection,
   type PurchaseLogView,
@@ -27,58 +27,6 @@ function componentMin(
     return byId.get(storefrontProductId)?.[field] ?? 0;
   }
   return Math.min(...components.map((id) => byId.get(id)?.[field] ?? 0));
-}
-
-function AddInventoryItemForm({ section }: { section: InventorySection }) {
-  return (
-    <form
-      action="/api/admin/inventory"
-      method="post"
-      className="border border-dashed border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5"
-    >
-      <input type="hidden" name="section" value={section} />
-      <input type="hidden" name="tracksStock" value="true" />
-      <p className="text-sm font-medium text-[color:var(--admin-fg)]">
-        Add item
-      </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-end">
-        <label className="block text-sm">
-          Name
-          <input
-            name="name"
-            required
-            placeholder="e.g. Extra packing pillows"
-            className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none placeholder:text-[color:var(--admin-subtle)] focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
-          />
-        </label>
-        <label className="block text-sm">
-          Admin stock
-          <input
-            type="number"
-            name="stock"
-            min={0}
-            defaultValue={0}
-            required
-            className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
-          />
-        </label>
-        <label className="block text-sm">
-          Low-stock threshold
-          <input
-            type="number"
-            name="lowStockThreshold"
-            min={0}
-            defaultValue={3}
-            required
-            className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
-          />
-        </label>
-        <button type="submit" className="btn-primary h-fit">
-          Add
-        </button>
-      </div>
-    </form>
-  );
 }
 
 export default async function AdminInventoryPage({
@@ -140,57 +88,24 @@ export default async function AdminInventoryPage({
 
   return (
     <div>
-      <h1 className="font-display text-4xl font-semibold tracking-[-0.04em]">
-        Inventory
-      </h1>
-      <p className="mt-2 text-[color:var(--admin-muted)]">
+      <h1 className="text-[1.65rem] font-semibold tracking-tight">Inventory</h1>
+      <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
         Admin stock updates immediately. Storefront stock only changes when you sync.
       </p>
 
       {synced === "1" ? (
-        <p className="mt-4 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] px-4 py-3 text-sm text-[color:var(--admin-accent)]">
+        <p className="admin-notice admin-notice-ok mt-4">
           Storefront stock synced from admin inventory.
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-        <div>
-          <p className="font-medium text-[color:var(--admin-fg)]">
-            Sync stock to storefront
-          </p>
-          <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
-            Publish admin warehouse counts for store products. For the shedding
-            brush kit, storefront stock becomes the lower of brush and glove.
-          </p>
-          {outOfSyncCount > 0 ? (
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-warning-fg)]">
-              {outOfSyncCount} product{outOfSyncCount === 1 ? "" : "s"} out of sync
-            </p>
-          ) : (
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-accent)]">
-              Store products are in sync
-            </p>
-          )}
-        </div>
-        <form action="/api/admin/inventory/sync" method="post">
-          <button type="submit" className="btn-primary">
-            Sync to storefront
-          </button>
-        </form>
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-        <div>
-          <p className="font-medium text-[color:var(--admin-fg)]">Purchase logs</p>
-          <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
-            Log product stock, packing supplies, and business buys like a label
-            printer. Stocked items raise admin inventory; expense-only items count
-            toward spend only.
-          </p>
-        </div>
-        <Link href="/admin/inventory/purchases/new" className="btn-primary">
-          Log purchase
-        </Link>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <p className="pt-2 text-sm text-[color:var(--admin-muted)]">
+          {outOfSyncCount > 0
+            ? `${outOfSyncCount} store product${outOfSyncCount === 1 ? "" : "s"} out of sync`
+            : "Store products are in sync"}
+        </p>
+        <InventoryPageActions />
       </div>
 
       <PurchaseLogsSection
@@ -198,7 +113,7 @@ export default async function AdminInventoryPage({
         sectionLabels={sections.map((section) => inventorySectionLabels[section])}
       />
 
-      <div className="mt-8 space-y-10">
+      <div className="mt-8 space-y-8">
         {sections.map((section) => {
           const items = catalog.filter(
             (item) => item.section === section && item.tracksStock !== false,
@@ -206,32 +121,48 @@ export default async function AdminInventoryPage({
 
           return (
             <section key={section}>
-              <h2 className="font-display text-2xl font-semibold text-[color:var(--admin-fg)]">
+              <h2 className="text-sm font-semibold text-[color:var(--admin-fg)]">
                 {inventorySectionLabels[section]}
               </h2>
-              <div className="mt-4 space-y-4">
-                {items.length === 0 ? (
-                  <div className="border border-dashed border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5 text-sm text-[color:var(--admin-muted)]">
-                    No stocked items in this section yet.
-                  </div>
-                ) : (
-                  items.map((item) => (
-                    <InventoryItemCard
-                      key={item.id}
-                      item={item}
-                      stock={byId.get(item.id)?.stock ?? 0}
-                      storefrontStock={byId.get(item.id)?.storefrontStock ?? 0}
-                      threshold={
-                        byId.get(item.id)?.lowStockThreshold ??
-                        item.lowStockThreshold
-                      }
-                      byId={byId}
-                      builtin={isBuiltinCatalogItem(item.id)}
-                      removable={canRemoveInventoryItem(item.id)}
-                    />
-                  ))
-                )}
-                <AddInventoryItemForm section={section} />
+              <div className="admin-table-wrap mt-3">
+                <table className="min-w-[640px]">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Stock</th>
+                      <th>Alert at</th>
+                      <th>Notes</th>
+                      <th>
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-[color:var(--admin-muted)]">
+                          No items in this section yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      items.map((item) => (
+                        <InventoryItemRow
+                          key={item.id}
+                          item={item}
+                          stock={byId.get(item.id)?.stock ?? 0}
+                          storefrontStock={byId.get(item.id)?.storefrontStock ?? 0}
+                          threshold={
+                            byId.get(item.id)?.lowStockThreshold ??
+                            item.lowStockThreshold
+                          }
+                          byId={byId}
+                          builtin={isBuiltinCatalogItem(item.id)}
+                          removable={canRemoveInventoryItem(item.id)}
+                        />
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </section>
           );
@@ -241,7 +172,7 @@ export default async function AdminInventoryPage({
   );
 }
 
-function InventoryItemCard({
+function InventoryItemRow({
   item,
   stock,
   storefrontStock,
@@ -273,86 +204,80 @@ function InventoryItemCard({
     (stock !== storefrontStock ||
       (isKitComponent && kitStorefront !== kitAdminAvailable));
 
+  const notes = [
+    item.section === "store-products"
+      ? isKitComponent
+        ? `Store ${kitStorefront}`
+        : `Store ${storefrontStock}`
+      : null,
+    isKitComponent ? `Kits ${kitAdminAvailable}` : null,
+    outOfSync ? "Out of sync" : null,
+    low ? "Low" : null,
+    builtin ? null : "Custom",
+  ].filter(Boolean);
+
   return (
-    <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-      <form action={`/api/admin/inventory/${item.id}`} method="post">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="font-medium text-[color:var(--admin-fg)]">{item.name}</p>
-            <p className="text-xs text-[color:var(--admin-subtle)]">
-              {item.id}
-              {builtin ? "" : " · custom"}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {item.section === "store-products" ? (
-              <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
-                {isKitComponent
-                  ? `Kit storefront: ${kitStorefront} (min brush/glove)`
-                  : `Storefront: ${storefrontStock}`}
-              </span>
-            ) : null}
-            {isKitComponent ? (
-              <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-accent)]">
-                Kit component · admin kits: {kitAdminAvailable}
-              </span>
-            ) : null}
-            {outOfSync ? (
-              <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-warning-fg)]">
-                Out of sync
-              </span>
-            ) : null}
-            {low ? (
-              <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-warning-fg)]">
-                Low stock
-              </span>
-            ) : null}
-          </div>
-        </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-          <label className="block text-sm">
-            Admin stock
-            <input
-              type="number"
-              name="stock"
-              min={0}
-              defaultValue={stock}
-              required
-              className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
-            />
-          </label>
-          <label className="block text-sm">
-            Low-stock threshold
-            <input
-              type="number"
-              name="lowStockThreshold"
-              min={0}
-              defaultValue={threshold}
-              required
-              className="mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30"
-            />
-          </label>
-          <button type="submit" className="btn-primary h-fit">
-            Save
-          </button>
-        </div>
-      </form>
-      {removable ? (
+    <tr>
+      <td>
         <form
+          id={`save-${item.id}`}
           action={`/api/admin/inventory/${item.id}`}
           method="post"
-          className="mt-4 border-t border-[color:var(--admin-border)] pt-4"
-        >
-          <input type="hidden" name="intent" value="delete" />
-          <input type="hidden" name="redirectTo" value="/admin/inventory" />
-          <button
-            type="submit"
-            className="border border-[color:var(--admin-danger-border)] bg-[var(--admin-danger-bg)] px-3 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-danger-fg)] transition hover:opacity-90"
+        />
+        {removable ? (
+          <form
+            id={`delete-${item.id}`}
+            action={`/api/admin/inventory/${item.id}`}
+            method="post"
           >
-            Remove
+            <input type="hidden" name="intent" value="delete" />
+            <input type="hidden" name="redirectTo" value="/admin/inventory" />
+          </form>
+        ) : null}
+        <p className="font-medium">{item.name}</p>
+        <p className="text-xs text-[color:var(--admin-subtle)]">{item.id}</p>
+      </td>
+      <td>
+        <input
+          form={`save-${item.id}`}
+          type="number"
+          name="stock"
+          min={0}
+          defaultValue={stock}
+          required
+          className="admin-input admin-input-compact"
+        />
+      </td>
+      <td>
+        <input
+          form={`save-${item.id}`}
+          type="number"
+          name="lowStockThreshold"
+          min={0}
+          defaultValue={threshold}
+          required
+          className="admin-input admin-input-compact"
+        />
+      </td>
+      <td className="text-xs text-[color:var(--admin-muted)]">
+        {notes.length > 0 ? notes.join(" · ") : "—"}
+      </td>
+      <td className="text-right">
+        <div className="flex justify-end gap-2">
+          <button form={`save-${item.id}`} type="submit" className="btn-primary">
+            Save
           </button>
-        </form>
-      ) : null}
-    </div>
+          {removable ? (
+            <button
+              form={`delete-${item.id}`}
+              type="submit"
+              className="rounded-md px-2 py-1.5 text-xs font-medium text-[color:var(--admin-danger-fg)] hover:underline"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
+      </td>
+    </tr>
   );
 }

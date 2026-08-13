@@ -20,11 +20,11 @@ export default async function EditInventoryPurchasePage({
     <div>
       <Link
         href="/admin/inventory"
-        className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
+        className="text-sm font-medium text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
       >
         ← Inventory
       </Link>
-      <h1 className="mt-4 font-display text-4xl font-semibold tracking-[-0.04em]">
+      <h1 className="mt-3 text-[1.65rem] font-semibold tracking-tight">
         Edit purchase
       </h1>
       <p className="mt-2 max-w-2xl text-[color:var(--admin-muted)]">

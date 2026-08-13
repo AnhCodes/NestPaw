@@ -36,7 +36,7 @@ export default function CartPage() {
           <p className="text-ink/70">Your cart is empty.</p>
           <Link
             href="/shop"
-            className="mt-6 inline-flex bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+            className="mt-6 inline-flex rounded-xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
           >
             Continue shopping
           </Link>
@@ -49,7 +49,7 @@ export default function CartPage() {
                 key={product.id}
                 className="grid grid-cols-[96px_1fr] gap-4 border-b border-moss/10 pb-6 sm:grid-cols-[120px_1fr_auto]"
               >
-                <div className="relative aspect-square overflow-hidden bg-sage/15">
+                <div className="relative aspect-square overflow-hidden rounded-xl bg-sage/15">
                   <Image
                     src={product.image}
                     alt={product.name}
@@ -72,7 +72,7 @@ export default function CartPage() {
                     <label className="text-xs uppercase tracking-wider text-ink/50">
                       Qty
                       <select
-                        className="ml-2 border border-moss/20 bg-white/70 px-2 py-1 text-sm text-ink"
+                        className="ml-2 rounded-lg border border-moss/20 bg-white/70 px-2 py-1 text-sm text-ink"
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(product.id, Number(e.target.value))
@@ -98,7 +98,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          <aside className="h-fit border border-moss/15 bg-stone/70 p-6">
+          <aside className="h-fit rounded-2xl border border-moss/15 bg-stone/70 p-6">
             <h2 className="font-display text-2xl text-ink">Summary</h2>
             <div className="mt-6 space-y-3 text-sm">
               <div className="flex justify-between text-ink/70">
@@ -124,7 +124,7 @@ export default function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="mt-6 flex w-full items-center justify-center bg-moss py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+              className="mt-6 flex w-full items-center justify-center rounded-xl bg-moss py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
             >
               Checkout
             </Link>

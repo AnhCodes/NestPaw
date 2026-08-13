@@ -8,52 +8,95 @@ function formatCents(cents: number | null | undefined) {
   return formatPrice(cents / 100);
 }
 
+function customerErrorMessage(value: string | undefined) {
+  switch (value) {
+    case "email_required":
+      return "Email is required.";
+    case "email_taken":
+      return "Another customer already uses that email.";
+    case "save_failed":
+      return "Could not save customer details. Try again.";
+    default:
+      return null;
+  }
+}
+
 export default async function AdminCustomerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ customerId: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
   const { customerId } = await params;
+  const query = await searchParams;
   const data = await getCustomerById(customerId);
   if (!data) notFound();
 
   const { customer, orders } = data;
+  const error = customerErrorMessage(query.error);
 
   return (
     <div>
       <Link
         href="/admin/customers"
-        className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
+        className="text-sm font-medium text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
       >
         ← Customers
       </Link>
-      <h1 className="mt-4 font-display text-4xl font-semibold tracking-[-0.04em]">
+      <h1 className="mt-3 text-[1.65rem] font-semibold tracking-tight">
         {customer.name || customer.email}
       </h1>
       <p className="mt-2 text-[color:var(--admin-muted)]">{customer.email}</p>
 
-      <dl className="mt-8 grid gap-4 border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6 text-sm sm:grid-cols-3">
-        <div>
-          <dt className="text-[color:var(--admin-subtle)]">Phone</dt>
-          <dd className="mt-1">{customer.phone || "—"}</dd>
+      {query.saved === "1" ? (
+        <p className="admin-notice admin-notice-ok mt-6">Customer details saved.</p>
+      ) : null}
+      {error ? (
+        <p className="admin-notice admin-notice-warn mt-6">{error}</p>
+      ) : null}
+
+      <form
+        action={`/api/admin/customers/${customer.id}`}
+        method="post"
+        className="admin-card mt-8 grid gap-4 p-6 sm:grid-cols-3"
+      >
+        <label className="block text-sm text-[color:var(--admin-fg)]">
+          Name
+          <input
+            name="name"
+            defaultValue={customer.name ?? ""}
+            className="admin-input"
+          />
+        </label>
+        <label className="block text-sm text-[color:var(--admin-fg)]">
+          Email
+          <input
+            name="email"
+            type="email"
+            required
+            defaultValue={customer.email}
+            className="admin-input"
+          />
+        </label>
+        <label className="block text-sm text-[color:var(--admin-fg)]">
+          Phone
+          <input
+            name="phone"
+            defaultValue={customer.phone ?? ""}
+            className="admin-input"
+          />
+        </label>
+        <div className="sm:col-span-3">
+          <button type="submit" className="btn-primary">
+            Save customer
+          </button>
         </div>
-        <div>
-          <dt className="text-[color:var(--admin-subtle)]">Customer since</dt>
-          <dd className="mt-1">
-            {customer.createdAt
-              ? new Date(customer.createdAt).toLocaleDateString()
-              : "—"}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-[color:var(--admin-subtle)]">Orders</dt>
-          <dd className="mt-1">{orders.length}</dd>
-        </div>
-      </dl>
+      </form>
 
       <section className="mt-10">
-        <h2 className="font-display text-2xl font-semibold">Order history</h2>
-        <div className="mt-4 divide-y divide-[color:var(--admin-border)] border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
+        <h2 className="text-base font-semibold">Order history</h2>
+        <div className="admin-card mt-3 divide-y divide-[color:var(--admin-border)]">
           {orders.length === 0 ? (
             <p className="px-4 py-6 text-sm text-[color:var(--admin-muted)]">No orders.</p>
           ) : (

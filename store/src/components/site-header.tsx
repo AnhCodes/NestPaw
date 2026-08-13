@@ -64,7 +64,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2.5">
           <Link
             href="/cart"
-            className={`relative inline-flex items-center gap-2 border px-3.5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition ${
+            className={`relative inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition ${
               inverted
                 ? "border-mist/35 text-mist hover:border-mist hover:bg-mist/10"
                 : "border-line text-ink hover:border-ink/30 hover:bg-surface"
@@ -83,7 +83,7 @@ export function SiteHeader() {
           </Link>
           <button
             type="button"
-            className={`flex h-10 w-10 items-center justify-center border md:hidden ${
+            className={`flex h-10 w-10 items-center justify-center rounded-xl border md:hidden ${
               inverted ? "border-mist/35" : "border-line"
             }`}
             aria-label="Toggle menu"

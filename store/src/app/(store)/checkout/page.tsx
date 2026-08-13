@@ -80,7 +80,7 @@ export default function CheckoutPage() {
         Checkout
       </h1>
       {!allInStock ? (
-        <p className="mt-6 border border-line bg-stone px-4 py-3 text-sm text-ink/70">
+        <p className="mt-6 rounded-xl border border-line bg-stone px-4 py-3 text-sm text-ink/70">
           One or more items are out of stock. Remove them from your cart before
           paying. Inventory updates when wholesale stock arrives.
         </p>
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
         <form onSubmit={onSubmit} className="space-y-6">
           {error ? (
-            <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {error}
             </p>
           ) : null}
@@ -105,7 +105,7 @@ export default function CheckoutPage() {
           </button>
         </form>
 
-        <aside className="h-fit border border-line bg-surface p-6">
+        <aside className="h-fit rounded-2xl border border-line bg-surface p-6">
           <h2 className="font-display text-2xl font-semibold text-ink">
             Order
           </h2>

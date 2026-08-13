@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import {
   ADMIN_COOKIE,
   verifyAdminSessionToken,
@@ -49,7 +50,13 @@ export async function POST(
   const { orderId } = await context.params;
   const form = await request.formData();
   const intent = String(form.get("intent") ?? "fulfillment");
-  const redirectUrl = new URL(`/admin/orders/${orderId}`, request.url);
+  const requestedRedirect = String(form.get("redirectTo") ?? "");
+  const redirectPath =
+    requestedRedirect === "/admin/orders" ||
+    requestedRedirect === "/admin/fulfillment"
+      ? "/admin/orders"
+      : `/admin/orders/${orderId}`;
+  const redirectUrl = new URL(redirectPath, request.url);
 
   const existing = await getOrderById(orderId);
   if (!existing) {
@@ -84,6 +91,11 @@ export async function POST(
             : "save_failed",
       );
     }
+    revalidatePath("/admin");
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath("/admin/customers");
+    revalidatePath(`/admin/customers/${existing.customer.id}`);
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }
 
@@ -138,6 +150,10 @@ export async function POST(
     } else {
       redirectUrl.searchParams.set("shippedEmail", "saved");
     }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
 
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }

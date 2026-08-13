@@ -24,7 +24,7 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className={`group relative block overflow-hidden border border-line bg-surface shadow-[0_1px_0_rgba(14,22,19,0.04)] ${
+      className={`group relative block overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_1px_0_rgba(14,22,19,0.04)] ${
         fill || large ? "h-full" : ""
       } ${className}`}
     >

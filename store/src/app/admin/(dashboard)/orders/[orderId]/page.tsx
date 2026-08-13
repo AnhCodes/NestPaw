@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { formatPrice } from "@/lib/products";
 import { getOrderById } from "@/lib/orders";
 import type { FulfillmentStatus, ReturnStatus } from "@/lib/db/schema";
+import { AdminBadge, fulfillmentTone } from "@/components/admin-badge";
 
 function formatCents(cents: number | null | undefined) {
   if (cents == null) return "—";
   return formatPrice(cents / 100);
 }
 
-const fieldClass =
-  "mt-2 w-full border border-[color:var(--admin-border)] bg-[var(--admin-input)] px-3 py-2 text-[color:var(--admin-fg)] placeholder:text-[color:var(--admin-subtle)] outline-none focus:ring-2 focus:ring-[color:var(--admin-accent)]/30";
+const fieldClass = "admin-input";
 
 const statuses: FulfillmentStatus[] = [
   "unfulfilled",
@@ -104,45 +104,128 @@ export default async function AdminOrderDetailPage({
     <div>
       <Link
         href="/admin/orders"
-        className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
+        className="text-sm font-medium text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
       >
-        ← Orders
+        ← Orders and Fulfillment
       </Link>
-      <h1 className="mt-4 font-display text-4xl font-semibold tracking-[-0.04em]">
-        Order
+      <h1 className="mt-3 text-[1.65rem] font-semibold tracking-tight">
+        {customer.email}
       </h1>
-      <p className="mt-2 break-all text-sm text-[color:var(--admin-muted)]">{order.id}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[color:var(--admin-muted)]">
+        <AdminBadge tone={fulfillmentTone(order.fulfillmentStatus)}>
+          {order.fulfillmentStatus}
+        </AdminBadge>
+        <span>{formatCents(order.amountTotal)}</span>
+        <span>{order.paymentStatus ?? "unpaid"}</span>
+      </div>
 
       {shippedNotice ? (
         <p
-          className={`mt-6 border px-4 py-3 text-sm ${
+          className={`admin-notice mt-6 ${
             shippedNotice.tone === "warn"
-              ? "border-[color:var(--admin-warning-fg)]/30 bg-[color:var(--admin-warning-fg)]/10 text-[color:var(--admin-warning-fg)]"
-              : "border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 text-[color:var(--admin-fg)]"
+              ? "admin-notice-warn"
+              : "admin-notice-ok"
           }`}
         >
           {shippedNotice.text}
         </p>
       ) : null}
       {query.customerSaved === "1" ? (
-        <p className="mt-6 border border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 px-4 py-3 text-sm text-[color:var(--admin-fg)]">
+        <p className="admin-notice admin-notice-ok mt-6">
           Customer details saved.
         </p>
       ) : null}
       {customerError ? (
-        <p className="mt-6 border border-[color:var(--admin-warning-fg)]/30 bg-[color:var(--admin-warning-fg)]/10 px-4 py-3 text-sm text-[color:var(--admin-warning-fg)]">
+        <p className="admin-notice admin-notice-warn mt-6">
           {customerError}
         </p>
       ) : null}
       {query.returnSaved === "1" ? (
-        <p className="mt-6 border border-[color:var(--admin-accent)]/30 bg-[color:var(--admin-accent)]/10 px-4 py-3 text-sm text-[color:var(--admin-fg)]">
+        <p className="admin-notice admin-notice-ok mt-6">
           Return status saved.
         </p>
       ) : null}
 
-      <div className="mt-8 grid gap-8 xl:grid-cols-3">
-        <section className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6">
-          <h2 className="font-display text-xl font-semibold">Customer</h2>
+      <div className="mt-8 grid gap-6 xl:grid-cols-2">
+        <section className="admin-card p-6">
+          <h2 className="text-sm font-semibold">Ship</h2>
+          <form
+            action={`/api/admin/orders/${order.id}`}
+            method="post"
+            className="mt-4 space-y-4"
+          >
+            <input type="hidden" name="intent" value="fulfillment" />
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Status
+              <select
+                name="fulfillmentStatus"
+                defaultValue={order.fulfillmentStatus}
+                className={fieldClass}
+              >
+                {statuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Tracking number
+              <input
+                name="trackingNumber"
+                defaultValue={order.trackingNumber ?? ""}
+                autoComplete="off"
+                spellCheck={false}
+                className={fieldClass}
+                placeholder="Required to email tracking"
+              />
+            </label>
+            <label className="block text-sm text-[color:var(--admin-fg)]">
+              Confirm tracking
+              <input
+                name="trackingNumberConfirm"
+                defaultValue={order.trackingNumber ?? ""}
+                autoComplete="off"
+                spellCheck={false}
+                className={fieldClass}
+                placeholder="Re-type to confirm"
+              />
+            </label>
+            <p className="text-xs text-[color:var(--admin-subtle)]">
+              Marking shipped with matching tracking emails a USPS link.
+            </p>
+            <button type="submit" className="btn-primary">
+              Save fulfillment
+            </button>
+          </form>
+        </section>
+
+        <section className="admin-card overflow-hidden">
+          <h2 className="border-b border-[color:var(--admin-border)] px-6 py-4 text-sm font-semibold">
+            Items
+          </h2>
+          <ul className="divide-y divide-[color:var(--admin-border)]">
+            {items.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-4 px-6 py-4 text-sm"
+              >
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-[color:var(--admin-subtle)]">
+                    Qty {item.quantity}
+                  </p>
+                </div>
+                <p>{formatCents(item.lineAmount)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+        <section className="admin-card p-6">
+          <h2 className="text-sm font-semibold">Ship to</h2>
           <form
             action={`/api/admin/orders/${order.id}`}
             method="post"
@@ -228,11 +311,9 @@ export default async function AdminOrderDetailPage({
               </label>
             </div>
             <button type="submit" className="btn-primary">
-              Save customer
+              Save address
             </button>
             <p className="text-xs text-[color:var(--admin-subtle)]">
-              Updates this order&apos;s ship-to details and the linked customer
-              profile.{" "}
               <Link
                 href={`/admin/customers/${customer.id}`}
                 className="underline hover:text-[color:var(--admin-fg)]"
@@ -243,72 +324,8 @@ export default async function AdminOrderDetailPage({
           </form>
         </section>
 
-        <section className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6">
-          <h2 className="font-display text-xl font-semibold">Fulfillment</h2>
-          <form
-            action={`/api/admin/orders/${order.id}`}
-            method="post"
-            className="mt-4 space-y-4"
-          >
-            <input type="hidden" name="intent" value="fulfillment" />
-            <label className="block text-sm text-[color:var(--admin-fg)]">
-              Status
-              <select
-                name="fulfillmentStatus"
-                defaultValue={order.fulfillmentStatus}
-                className={fieldClass}
-              >
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm text-[color:var(--admin-fg)]">
-              Tracking number
-              <input
-                name="trackingNumber"
-                defaultValue={order.trackingNumber ?? ""}
-                autoComplete="off"
-                spellCheck={false}
-                className={fieldClass}
-                placeholder="Required to email tracking"
-              />
-            </label>
-            <label className="block text-sm text-[color:var(--admin-fg)]">
-              Confirm tracking number
-              <input
-                name="trackingNumberConfirm"
-                defaultValue={order.trackingNumber ?? ""}
-                autoComplete="off"
-                spellCheck={false}
-                className={fieldClass}
-                placeholder="Re-type to confirm"
-              />
-            </label>
-            <p className="text-xs text-[color:var(--admin-subtle)]">
-              Re-type the tracking number to catch typos before saving. Setting
-              status to shipped with tracking emails the customer a USPS link.
-            </p>
-            <button type="submit" className="btn-primary">
-              Save fulfillment
-            </button>
-          </form>
-          <dl className="mt-6 space-y-2 border-t border-[color:var(--admin-border)] pt-4 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-[color:var(--admin-subtle)]">Payment</dt>
-              <dd>{order.paymentStatus ?? "—"}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-[color:var(--admin-subtle)]">Total</dt>
-              <dd className="font-semibold">{formatCents(order.amountTotal)}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-6">
-          <h2 className="font-display text-xl font-semibold">Returns</h2>
+        <section className="admin-card p-6">
+          <h2 className="text-sm font-semibold">Return</h2>
           <form
             action={`/api/admin/orders/${order.id}`}
             method="post"
@@ -316,7 +333,7 @@ export default async function AdminOrderDetailPage({
           >
             <input type="hidden" name="intent" value="return" />
             <label className="block text-sm text-[color:var(--admin-fg)]">
-              Return status
+              Status
               <select
                 name="returnStatus"
                 defaultValue={order.returnStatus}
@@ -330,54 +347,26 @@ export default async function AdminOrderDetailPage({
               </select>
             </label>
             <label className="block text-sm text-[color:var(--admin-fg)]">
-              Return notes
+              Notes
               <textarea
                 name="returnNotes"
-                rows={5}
+                rows={4}
                 defaultValue={order.returnNotes ?? ""}
-                placeholder="Reason, customer message, approval notes, damaged item details, etc."
+                placeholder="Reason, approval notes, damage..."
                 className={fieldClass}
               />
             </label>
             <button type="submit" className="btn-primary">
-              Save return status
+              Save return
             </button>
           </form>
-          <dl className="mt-6 space-y-2 border-t border-[color:var(--admin-border)] pt-4 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-[color:var(--admin-subtle)]">Requested</dt>
-              <dd>
-                {order.returnRequestedAt
-                  ? new Date(order.returnRequestedAt).toLocaleString()
-                  : "—"}
-              </dd>
-            </div>
-          </dl>
+          {order.returnRequestedAt ? (
+            <p className="mt-4 text-xs text-[color:var(--admin-subtle)]">
+              Requested {new Date(order.returnRequestedAt).toLocaleString()}
+            </p>
+          ) : null}
         </section>
       </div>
-
-      <section className="mt-8 border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
-        <h2 className="border-b border-[color:var(--admin-border)] px-6 py-4 font-display text-xl font-semibold">
-          Items
-        </h2>
-        <ul className="divide-y divide-[color:var(--admin-border)]">
-          {items.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-center justify-between gap-4 px-6 py-4 text-sm"
-            >
-              <div>
-                <p className="font-medium">{item.name}</p>
-                <p className="text-[color:var(--admin-subtle)]">
-                  Qty {item.quantity}
-                  {item.productId ? ` · ${item.productId}` : ""}
-                </p>
-              </div>
-              <p>{formatCents(item.lineAmount)}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }

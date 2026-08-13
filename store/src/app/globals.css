@@ -74,6 +74,23 @@
   }
 }
 
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 body {
   background-color: var(--canvas);
   background-image:
@@ -119,6 +136,54 @@ body {
   animation-delay: 0.32s;
 }
 
+.animate-page-in {
+  animation: page-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--stone);
+  border-radius: 0.75rem;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  animation: skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.skeleton-dark {
+  background: rgba(247, 248, 246, 0.12);
+}
+
+.skeleton-dark::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(247, 248, 246, 0.2),
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in {
+    animation: fade-in 0.2s ease both;
+  }
+
+  .skeleton::after {
+    animation: none;
+  }
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -131,6 +196,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  border-radius: 0.9rem;
   transition:
     background 0.25s ease,
     transform 0.25s ease;
@@ -153,6 +219,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  border-radius: 0.9rem;
   transition:
     background 0.25s ease,
     transform 0.25s ease;
@@ -175,6 +242,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  border-radius: 0.9rem;
   transition:
     border-color 0.25s ease,
     background 0.25s ease;
@@ -196,6 +264,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  border-radius: 0.9rem;
   transition:
     border-color 0.25s ease,
     background 0.25s ease;

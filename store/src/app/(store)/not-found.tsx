@@ -14,7 +14,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/shop"
-        className="mt-8 inline-flex bg-moss px-6 py-3.5 text-sm font-medium text-mist"
+        className="mt-8 inline-flex rounded-xl bg-moss px-6 py-3.5 text-sm font-medium text-mist"
       >
         Shop NestPaw
       </Link>

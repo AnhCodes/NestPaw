@@ -122,6 +122,25 @@ export async function listOrders() {
     .orderBy(desc(orders.createdAt));
 }
 
+export async function listOrdersWithItems() {
+  const rows = await listOrders();
+  if (rows.length === 0) return [];
+
+  const db = getDb();
+  const items = await db.select().from(orderItems);
+  const byOrder = new Map<string, typeof items>();
+  for (const item of items) {
+    const list = byOrder.get(item.orderId) ?? [];
+    list.push(item);
+    byOrder.set(item.orderId, list);
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    items: byOrder.get(row.order.id) ?? [],
+  }));
+}
+
 export async function getOrderById(orderId: string) {
   const db = getDb();
   const row = await db
@@ -349,6 +368,47 @@ export async function getCustomerById(customerId: string) {
     .orderBy(desc(orders.createdAt));
 
   return { customer, orders: customerOrders };
+}
+
+export async function updateCustomer(
+  customerId: string,
+  input: {
+    email: string;
+    name: string;
+    phone: string;
+  },
+) {
+  const db = getDb();
+  const email = input.email.trim().toLowerCase();
+  if (!email) throw new Error("Email is required");
+
+  const [existing] = await db
+    .select({ id: customers.id })
+    .from(customers)
+    .where(eq(customers.id, customerId))
+    .limit(1);
+  if (!existing) throw new Error("Customer not found");
+
+  const [emailOwner] = await db
+    .select({ id: customers.id })
+    .from(customers)
+    .where(eq(customers.email, email))
+    .limit(1);
+  if (emailOwner && emailOwner.id !== customerId) {
+    throw new Error("Another customer already uses that email");
+  }
+
+  const [row] = await db
+    .update(customers)
+    .set({
+      email,
+      name: input.name.trim() || null,
+      phone: input.phone.trim() || null,
+      updatedAt: new Date(),
+    })
+    .where(eq(customers.id, customerId))
+    .returning();
+  return row;
 }
 
 export async function getRevenueSummary() {

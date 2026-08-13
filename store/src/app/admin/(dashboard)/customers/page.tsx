@@ -6,44 +6,49 @@ export default async function AdminCustomersPage() {
 
   return (
     <div>
-      <h1 className="font-display text-4xl font-semibold tracking-[-0.04em]">
-        Customers
-      </h1>
-      <p className="mt-2 text-[color:var(--admin-muted)]">
-        People who have completed a NestPaw checkout.
+      <h1 className="text-[1.65rem] font-semibold tracking-tight">Customers</h1>
+      <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
+        Click a row to edit details and see order history.
       </p>
 
-      <div className="mt-8 overflow-x-auto border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="border-b border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] text-[0.7rem] uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
+      <div className="admin-table-wrap mt-6">
+        <table>
+          <thead>
             <tr>
-              <th className="px-4 py-3 font-semibold">Email</th>
-              <th className="px-4 py-3 font-semibold">Name</th>
-              <th className="px-4 py-3 font-semibold">Phone</th>
-              <th className="px-4 py-3 font-semibold">Since</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Since</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[color:var(--admin-border)]">
+          <tbody>
             {customers.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-[color:var(--admin-muted)]">
+                <td colSpan={3} className="text-[color:var(--admin-muted)]">
                   No customers yet.
                 </td>
               </tr>
             ) : (
               customers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-[var(--admin-hover)]">
-                  <td className="px-4 py-3">
+                <tr key={customer.id}>
+                  <td>
                     <Link
                       href={`/admin/customers/${customer.id}`}
-                      className="font-medium text-[color:var(--admin-fg)] hover:underline"
-                    >
-                      {customer.email}
-                    </Link>
+                      className="admin-row-link"
+                      aria-label={`Open ${customer.email}`}
+                    />
+                    <p className="font-medium">
+                      {customer.name || customer.email}
+                    </p>
+                    {customer.name ? (
+                      <p className="text-xs text-[color:var(--admin-subtle)]">
+                        {customer.email}
+                      </p>
+                    ) : null}
                   </td>
-                  <td className="px-4 py-3">{customer.name || "—"}</td>
-                  <td className="px-4 py-3">{customer.phone || "—"}</td>
-                  <td className="px-4 py-3 text-[color:var(--admin-muted)]">
+                  <td className="text-[color:var(--admin-muted)]">
+                    {customer.phone || "—"}
+                  </td>
+                  <td className="text-[color:var(--admin-muted)]">
                     {customer.createdAt
                       ? new Date(customer.createdAt).toLocaleDateString()
                       : "—"}

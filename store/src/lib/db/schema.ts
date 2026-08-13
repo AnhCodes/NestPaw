@@ -110,11 +110,22 @@ export const inventoryPurchaseItems = pgTable("inventory_purchase_items", {
   lineCostCents: integer("line_cost_cents").notNull().default(0),
 });
 
+export const investors = pgTable("investors", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  notes: text("notes"),
+  investedAt: timestamp("invested_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Customer = typeof customers.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InventoryRow = typeof inventory.$inferSelect;
 export type InventoryPurchase = typeof inventoryPurchases.$inferSelect;
 export type InventoryPurchaseItem = typeof inventoryPurchaseItems.$inferSelect;
+export type Investor = typeof investors.$inferSelect;
 export type FulfillmentStatus = (typeof fulfillmentStatusEnum.enumValues)[number];
 export type ReturnStatus = (typeof returnStatusEnum.enumValues)[number];

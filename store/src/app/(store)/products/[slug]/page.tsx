@@ -49,7 +49,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     <div className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         <div className="space-y-3">
-          <div className="relative aspect-[2/3] overflow-hidden bg-stone">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-stone">
             <Image
               src={product.image}
               alt={product.name}
@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               {product.gallery.slice(1).map((src) => (
                 <div
                   key={src}
-                  className="relative aspect-[2/3] overflow-hidden bg-stone"
+                  className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-stone"
                 >
                   <Image
                     src={src}
@@ -149,7 +149,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           </div>
 
           {pairingNudge ? (
-            <div className="mt-10 border border-line bg-surface p-6">
+            <div className="mt-10 rounded-2xl border border-line bg-surface p-6">
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
                 Pair it
               </p>

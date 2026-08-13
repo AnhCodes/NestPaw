@@ -5,7 +5,6 @@ import {
   getKitComponentIds,
   inventoryCatalog,
   isKitStorefrontProduct,
-  kitAssemblies,
   type InventoryCatalogItem,
   type InventorySection,
 } from "@/lib/inventory-catalog";
@@ -258,11 +257,9 @@ export async function createCustomInventoryItem(input: {
   return productId;
 }
 
-const kitComponentIds = new Set(Object.values(kitAssemblies).flat());
-
 export function canRemoveInventoryItem(productId: string) {
+  // The assembled kit is not a warehouse SKU — hide its virtual row only.
   if (isKitStorefrontProduct(productId)) return false;
-  if (kitComponentIds.has(productId)) return false;
   return true;
 }
 

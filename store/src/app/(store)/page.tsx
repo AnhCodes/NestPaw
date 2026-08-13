@@ -117,7 +117,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
-        <div className="grid overflow-hidden border border-line bg-surface md:grid-cols-2">
+        <div className="grid overflow-hidden rounded-3xl border border-line bg-surface md:grid-cols-2">
           <div className="relative min-h-[22rem] bg-[#d8e0da] md:min-h-[34rem]">
             <Image
               src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=1400&q=80"

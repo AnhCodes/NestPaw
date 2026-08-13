@@ -2,12 +2,8 @@ import Link from "next/link";
 import {
   catalogItemTracksStock,
   inventorySectionLabels,
-  type InventorySection,
 } from "@/lib/inventory-catalog";
-import {
-  canRemoveInventoryItem,
-  getMergedInventoryCatalog,
-} from "@/lib/inventory";
+import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { formatPrice } from "@/lib/products";
 import {
   getPurchaseSpendSummary,
@@ -15,6 +11,7 @@ import {
   listInventoryRows,
   listOrders,
 } from "@/lib/orders";
+import { AdminBadge, fulfillmentTone } from "@/components/admin-badge";
 
 function formatCents(cents: number) {
   return formatPrice(cents / 100);
@@ -29,195 +26,190 @@ export default async function AdminOverviewPage() {
     getMergedInventoryCatalog(),
   ]);
 
-  const recent = orders.slice(0, 8);
-  const stockById = new Map(inventoryRows.map((row) => [row.productId, row.stock]));
-  const stockSections: InventorySection[] = [
-    "store-products",
-    "treats",
-    "printed-materials",
-    "shipping-supplies",
-    "business-ops",
-  ];
-  const stockBySection = stockSections
-    .map((section) => ({
-      section,
-      label: inventorySectionLabels[section],
-      items: catalog
-        .filter(
-          (item) => item.section === section && catalogItemTracksStock(item),
-        )
-        .map((item) => ({
-          id: item.id,
-          name: item.name,
-          stock: stockById.get(item.id) ?? 0,
-        })),
-    }))
-    .filter((group) => group.items.length > 0);
+  const unfulfilled = orders.filter(
+    ({ order }) => order.fulfillmentStatus === "unfulfilled",
+  );
+  const recent = orders.slice(0, 6);
+  const stockById = new Map(inventoryRows.map((row) => [row.productId, row]));
+  const lowStock = catalog
+    .filter((item) => catalogItemTracksStock(item))
+    .map((item) => {
+      const row = stockById.get(item.id);
+      const stock = row?.stock ?? 0;
+      const threshold = row?.lowStockThreshold ?? item.lowStockThreshold;
+      return {
+        id: item.id,
+        name: item.name,
+        section: inventorySectionLabels[item.section],
+        stock,
+        threshold,
+        low: threshold > 0 && stock <= threshold,
+      };
+    })
+    .filter((item) => item.low);
 
   return (
     <div>
-      <h1 className="font-display text-4xl font-semibold tracking-[-0.04em]">
-        Overview
-      </h1>
-      <p className="mt-2 text-[color:var(--admin-muted)]">
-        Sales, fulfillment queue, and inventory at a glance.
+      <h1 className="text-[1.65rem] font-semibold tracking-tight">Overview</h1>
+      <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
+        What needs attention, plus a quick read on sales.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
-            Paid orders
+      <div className="admin-card admin-stats mt-8">
+        <div className="admin-stat">
+          <p className="text-xs font-medium text-[color:var(--admin-subtle)]">
+            To ship
           </p>
-          <p className="mt-3 font-display text-3xl font-semibold">
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
+            <Link href="/admin/orders" className="hover:underline">
+              {unfulfilled.length}
+            </Link>
+          </p>
+        </div>
+        <div className="admin-stat">
+          <p className="text-xs font-medium text-[color:var(--admin-subtle)]">
+            Orders
+          </p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
             {summary.orderCount}
           </p>
         </div>
-        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
+        <div className="admin-stat">
+          <p className="text-xs font-medium text-[color:var(--admin-subtle)]">
             Revenue
           </p>
-          <p className="mt-3 font-display text-3xl font-semibold">
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
             {formatCents(summary.revenueCents)}
           </p>
-        </div>
-        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
-            Average order
-          </p>
-          <p className="mt-3 font-display text-3xl font-semibold">
-            {formatCents(summary.averageOrderValueCents)}
+          <p className="mt-1 text-xs text-[color:var(--admin-muted)]">
+            Avg {formatCents(summary.averageOrderValueCents)}
           </p>
         </div>
-        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
-            Inventory spend
+        <div className="admin-stat">
+          <p className="text-xs font-medium text-[color:var(--admin-subtle)]">
+            Spend
           </p>
-          <p className="mt-3 font-display text-3xl font-semibold">
-            {formatCents(spend.inventorySpendCents)}
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
+            {formatCents(
+              spend.inventorySpendCents + spend.operationsSpendCents,
+            )}
           </p>
-          <p className="mt-2 text-xs text-[color:var(--admin-muted)]">
-            {spend.inventoryLineCount === 0
-              ? "No product inventory purchases yet"
-              : `Alibaba ${formatCents(spend.alibabaInventorySpendCents)} · products, treats, and print`}
-          </p>
-        </div>
-        <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] p-5">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--admin-subtle)]">
-            Operations spend
-          </p>
-          <p className="mt-3 font-display text-3xl font-semibold">
+          <p className="mt-1 text-xs text-[color:var(--admin-muted)]">
+            Inventory {formatCents(spend.inventorySpendCents)} · Ops{" "}
             {formatCents(spend.operationsSpendCents)}
-          </p>
-          <p className="mt-2 text-xs text-[color:var(--admin-muted)]">
-            {spend.operationsLineCount === 0
-              ? "No ops purchases yet"
-              : "Shipping supplies, equipment, ads, and tools"}
           </p>
         </div>
       </div>
 
-      <div className="mt-12 grid gap-10 lg:grid-cols-2">
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section>
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="font-display text-2xl font-semibold">Recent orders</h2>
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="text-sm font-semibold">Recent orders</h2>
             <Link
               href="/admin/orders"
-              className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
+              className="text-sm text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
             >
-              View all →
+              All orders
             </Link>
           </div>
-          <div className="mt-4 divide-y divide-[color:var(--admin-border)] border border-[color:var(--admin-border)] bg-[var(--admin-surface)]">
-            {recent.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-[color:var(--admin-muted)]">No orders yet.</p>
-            ) : (
-              recent.map(({ order, customer }) => (
-                <Link
-                  key={order.id}
-                  href={`/admin/orders/${order.id}`}
-                  className="flex items-center justify-between gap-4 px-4 py-3 transition hover:bg-[var(--admin-hover)]"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-[color:var(--admin-fg)]">
-                      {customer.email}
-                    </p>
-                    <p className="text-xs text-[color:var(--admin-subtle)]">
-                      {order.fulfillmentStatus} ·{" "}
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleString()
-                        : "—"}
-                    </p>
-                  </div>
-                  <p className="text-sm font-semibold">
-                    {order.amountTotal != null
-                      ? formatCents(order.amountTotal)
-                      : "—"}
-                  </p>
-                </Link>
-              ))
-            )}
+          <div className="admin-table-wrap mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="text-[color:var(--admin-muted)]">
+                      No orders yet.
+                    </td>
+                  </tr>
+                ) : (
+                  recent.map(({ order, customer }) => (
+                    <tr key={order.id}>
+                      <td>
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          className="admin-row-link"
+                          aria-label={`Open order for ${customer.email}`}
+                        />
+                        <p className="font-medium">{customer.email}</p>
+                        <p className="text-xs text-[color:var(--admin-subtle)]">
+                          {order.createdAt
+                            ? new Date(order.createdAt).toLocaleDateString()
+                            : "—"}
+                        </p>
+                      </td>
+                      <td>
+                        <AdminBadge tone={fulfillmentTone(order.fulfillmentStatus)}>
+                          {order.fulfillmentStatus}
+                        </AdminBadge>
+                      </td>
+                      <td className="font-medium">
+                        {order.amountTotal != null
+                          ? formatCents(order.amountTotal)
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
 
         <section>
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="font-display text-2xl font-semibold">Stock</h2>
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="text-sm font-semibold">Low stock</h2>
             <Link
               href="/admin/inventory"
-              className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
+              className="text-sm text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
             >
-              Inventory →
+              Inventory
             </Link>
           </div>
-          <div className="mt-4 space-y-4">
-            {stockBySection.length === 0 ? (
-              <div className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)] px-4 py-6 text-sm text-[color:var(--admin-muted)]">
-                No inventory items yet.
-              </div>
-            ) : (
-              stockBySection.map((group) => (
-                <div
-                  key={group.section}
-                  className="border border-[color:var(--admin-border)] bg-[var(--admin-surface)]"
-                >
-                  <div className="border-b border-[color:var(--admin-border)] px-4 py-3">
-                    <h3 className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-subtle)]">
-                      {group.label}
-                    </h3>
-                  </div>
-                  <div className="divide-y divide-[color:var(--admin-border)]">
-                    {group.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between gap-4 px-4 py-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium">{item.name}</p>
-                          <p className="text-sm text-[color:var(--admin-muted)]">
-                            {item.stock} in stock
-                          </p>
-                        </div>
-                        {canRemoveInventoryItem(item.id) ? (
-                          <form
-                            action={`/api/admin/inventory/${item.id}`}
-                            method="post"
-                          >
-                            <input type="hidden" name="intent" value="delete" />
-                            <input type="hidden" name="redirectTo" value="/admin" />
-                            <button
-                              type="submit"
-                              className="border border-[color:var(--admin-danger-border)] bg-[var(--admin-danger-bg)] px-2.5 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-danger-fg)] transition hover:opacity-90"
-                            >
-                              Remove
-                            </button>
-                          </form>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="admin-table-wrap mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>On hand</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lowStock.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="text-[color:var(--admin-muted)]">
+                      Nothing is below its threshold.
+                    </td>
+                  </tr>
+                ) : (
+                  lowStock.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-xs text-[color:var(--admin-subtle)]">
+                          {item.section}
+                        </p>
+                      </td>
+                      <td>
+                        <span className="font-medium text-[color:var(--admin-warning-fg)]">
+                          {item.stock}
+                        </span>
+                        <span className="text-[color:var(--admin-subtle)]">
+                          {" "}
+                          / {item.threshold}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
       </div>

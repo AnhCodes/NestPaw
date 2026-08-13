@@ -59,10 +59,10 @@ export default function ContactPage() {
         and we&apos;ll get back within one business day.
       </p>
 
-      <section className="mt-10 border border-moss/15 bg-white/70 p-6 backdrop-blur-sm">
+      <section className="mt-10 rounded-2xl border border-moss/15 bg-white/70 p-6 backdrop-blur-sm">
         <h2 className="font-display text-2xl text-ink">Send us a message</h2>
         {contactSent ? (
-          <p className="mt-6 border border-moss/15 bg-stone/70 p-6 text-ink/80">
+          <p className="mt-6 rounded-2xl border border-moss/15 bg-stone/70 p-6 text-ink/80">
             Thanks, your message was sent. We&apos;ll reply to the email you
             provided within one business day.
           </p>
@@ -72,21 +72,21 @@ export default function ContactPage() {
               required
               name="name"
               placeholder="Name"
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full rounded-xl border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               required
               type="email"
               name="email"
               placeholder="Email"
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full rounded-xl border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <textarea
               required
               name="message"
               placeholder="How can we help?"
               rows={6}
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full rounded-xl border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               type="text"
@@ -98,7 +98,7 @@ export default function ContactPage() {
             />
 
             {contactError ? (
-              <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                 {contactError}
               </p>
             ) : null}
@@ -106,7 +106,7 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={contactLoading}
-              className="bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
             >
               {contactLoading ? "Sending..." : "Send message"}
             </button>
