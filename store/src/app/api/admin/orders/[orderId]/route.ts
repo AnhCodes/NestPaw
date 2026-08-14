@@ -8,6 +8,7 @@ import {
 import type { FulfillmentStatus, ReturnStatus } from "@/lib/db/schema";
 import { sendShippingNotification } from "@/lib/email";
 import {
+  deleteOrder,
   getOrderById,
   updateOrderFulfillment,
   updateOrderReturn,
@@ -61,6 +62,40 @@ export async function POST(
   const existing = await getOrderById(orderId);
   if (!existing) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  if (intent === "delete") {
+    let customerDeleted = false;
+    try {
+      const result = await deleteOrder(orderId);
+      customerDeleted = result.customerDeleted;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not delete order";
+      return NextResponse.json(
+        { error: message },
+        { status: message === "Order not found" ? 404 : 400 },
+      );
+    }
+
+    const dest =
+      requestedRedirect.startsWith("/admin/customers/") && !customerDeleted
+        ? requestedRedirect
+        : requestedRedirect === "/admin/customers"
+          ? "/admin/customers"
+          : "/admin/orders";
+    const deletedRedirect = new URL(dest, request.url);
+    deletedRedirect.searchParams.set("orderDeleted", "1");
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath("/admin/customers");
+    revalidatePath(`/admin/customers/${existing.customer.id}`);
+    revalidatePath("/admin/inventory");
+    revalidatePath("/admin/investors");
+
+    return NextResponse.redirect(deletedRedirect, { status: 303 });
   }
 
   if (intent === "customer") {

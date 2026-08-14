@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/products";
 import { listOrdersWithItems } from "@/lib/orders";
 import type { FulfillmentStatus, OrderItem } from "@/lib/db/schema";
+import { DeleteOrderButton } from "@/components/delete-order-button";
 import { EditCustomerButton } from "@/components/edit-customer-button";
 import { ShipOrderButton } from "@/components/ship-order-button";
 
@@ -104,6 +105,7 @@ export default async function AdminOrdersPage({
     shippedEmail?: string;
     customerSaved?: string;
     customerError?: string;
+    orderDeleted?: string;
   }>;
 }) {
   const query = await searchParams;
@@ -137,6 +139,9 @@ export default async function AdminOrdersPage({
       ) : null}
       {customerError ? (
         <p className="admin-notice admin-notice-warn mt-4">{customerError}</p>
+      ) : null}
+      {query.orderDeleted === "1" ? (
+        <p className="admin-notice admin-notice-ok mt-4">Order deleted.</p>
       ) : null}
 
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
@@ -269,6 +274,7 @@ export default async function AdminOrdersPage({
                               country: address.country || "US",
                             }}
                           />
+                          <DeleteOrderButton orderId={order.id} />
                         </div>
                       </article>
                     );

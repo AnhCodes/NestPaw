@@ -4,6 +4,7 @@ import { formatPrice } from "@/lib/products";
 import { getOrderById } from "@/lib/orders";
 import type { FulfillmentStatus, ReturnStatus } from "@/lib/db/schema";
 import { AdminBadge, fulfillmentTone } from "@/components/admin-badge";
+import { DeleteOrderButton } from "@/components/delete-order-button";
 
 function formatCents(cents: number | null | undefined) {
   if (cents == null) return "—";
@@ -117,6 +118,7 @@ export default async function AdminOrderDetailPage({
         </AdminBadge>
         <span>{formatCents(order.amountTotal)}</span>
         <span>{order.paymentStatus ?? "unpaid"}</span>
+        <DeleteOrderButton orderId={order.id} />
       </div>
 
       {shippedNotice ? (

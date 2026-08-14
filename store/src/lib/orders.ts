@@ -15,6 +15,7 @@ import {
   decrementStockForItems,
   incrementAdminStock,
   newId,
+  restoreStockForItems,
   stableCustomerId,
 } from "@/lib/inventory";
 import {
@@ -161,6 +162,37 @@ export async function getOrderById(orderId: string) {
     .where(eq(orderItems.orderId, orderId));
 
   return { ...row[0], items };
+}
+
+export async function deleteOrder(orderId: string) {
+  const existing = await getOrderById(orderId);
+  if (!existing) throw new Error("Order not found");
+
+  const db = getDb();
+  if (existing.order.paymentStatus === "paid") {
+    await restoreStockForItems(existing.items);
+  }
+
+  await db.delete(orders).where(eq(orders.id, orderId));
+
+  const remaining = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.customerId, existing.customer.id))
+    .limit(1);
+
+  let customerDeleted = false;
+  if (remaining.length === 0) {
+    await db
+      .delete(customers)
+      .where(eq(customers.id, existing.customer.id));
+    customerDeleted = true;
+  }
+
+  return {
+    customerDeleted,
+    customerId: existing.customer.id,
+  };
 }
 
 export async function updateOrderFulfillment(

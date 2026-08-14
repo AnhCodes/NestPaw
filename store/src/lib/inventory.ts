@@ -483,6 +483,40 @@ export async function decrementStockForItems(
   }
 }
 
+/** Restore admin + storefront stock when a paid order is deleted. */
+export async function restoreStockForItems(
+  items: { productId?: string | null; quantity: number }[],
+) {
+  const db = getDb();
+  for (const item of items) {
+    if (!item.productId || item.productId === "shipping") continue;
+
+    const componentIds = getKitComponentIds(item.productId) ?? [item.productId];
+
+    for (const inventoryItemId of componentIds) {
+      await db
+        .update(inventory)
+        .set({
+          stock: sql`${inventory.stock} + ${item.quantity}`,
+          storefrontStock: sql`${inventory.storefrontStock} + ${item.quantity}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(inventory.productId, inventoryItemId));
+    }
+
+    if (isKitStorefrontProduct(item.productId)) {
+      await db
+        .update(inventory)
+        .set({
+          stock: sql`${inventory.stock} + ${item.quantity}`,
+          storefrontStock: sql`${inventory.storefrontStock} + ${item.quantity}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(inventory.productId, item.productId));
+    }
+  }
+}
+
 export function newId(prefix?: string) {
   const id = randomUUID();
   return prefix ? `${prefix}_${id}` : id;
