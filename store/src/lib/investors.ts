@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { getDb, isDatabaseConfigured } from "@/lib/db";
 import { investors, type Investor } from "@/lib/db/schema";
 import { newId } from "@/lib/inventory";
@@ -9,6 +9,31 @@ export type InvestorInput = {
   notes?: string | null;
   investedAt?: Date;
 };
+
+let investorsTableReady: Promise<void> | null = null;
+
+async function ensureInvestorsTable() {
+  if (!investorsTableReady) {
+    investorsTableReady = (async () => {
+      const db = getDb();
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS "investors" (
+          "id" text PRIMARY KEY NOT NULL,
+          "name" text NOT NULL,
+          "amount_cents" integer NOT NULL,
+          "notes" text,
+          "invested_at" timestamp with time zone DEFAULT now() NOT NULL,
+          "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+          "updated_at" timestamp with time zone DEFAULT now() NOT NULL
+        )
+      `);
+    })().catch((err) => {
+      investorsTableReady = null;
+      throw err;
+    });
+  }
+  await investorsTableReady;
+}
 
 function parseInvestorInput(input: InvestorInput) {
   const name = input.name.trim();
@@ -27,6 +52,7 @@ function parseInvestorInput(input: InvestorInput) {
 export async function listInvestors(): Promise<Investor[]> {
   if (!isDatabaseConfigured()) return [];
   try {
+    await ensureInvestorsTable();
     const db = getDb();
     return await db.select().from(investors).orderBy(desc(investors.investedAt));
   } catch (err) {
@@ -37,6 +63,7 @@ export async function listInvestors(): Promise<Investor[]> {
 
 export async function createInvestor(input: InvestorInput) {
   const parsed = parseInvestorInput(input);
+  await ensureInvestorsTable();
   const db = getDb();
   const now = new Date();
   const [row] = await db
@@ -56,6 +83,7 @@ export async function createInvestor(input: InvestorInput) {
 
 export async function updateInvestor(id: string, input: InvestorInput) {
   const parsed = parseInvestorInput(input);
+  await ensureInvestorsTable();
   const db = getDb();
   const [row] = await db
     .update(investors)
@@ -73,6 +101,7 @@ export async function updateInvestor(id: string, input: InvestorInput) {
 }
 
 export async function deleteInvestor(id: string) {
+  await ensureInvestorsTable();
   const db = getDb();
   const [row] = await db
     .delete(investors)

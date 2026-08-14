@@ -44,8 +44,14 @@ export async function POST(request: Request) {
   try {
     await createInvestor({ name, amountCents, notes, investedAt });
   } catch (err) {
+    console.error("[nestpaw][investors] createInvestor failed", err);
+    const raw = err instanceof Error ? err.message : "";
     const message =
-      err instanceof Error ? err.message : "Could not add investor";
+      /relation .*investors.* does not exist|Failed query: insert into "investors"/i.test(
+        raw,
+      )
+        ? "Could not add investor. The database table is missing."
+        : raw || "Could not add investor";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
