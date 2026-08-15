@@ -490,9 +490,12 @@ export async function getPurchaseSpendSummary() {
     (await getMergedInventoryCatalog()).map((item) => [item.id, item]),
   );
 
+  const bySection: Partial<Record<string, number>> = {};
+
   for (const line of lines) {
     const catalogItem = catalogById.get(line.inventoryItemId);
-    const section = catalogItem?.section;
+    const section = catalogItem?.section ?? "other";
+    bySection[section] = (bySection[section] ?? 0) + line.lineCostCents;
     const isOperations =
       section === "shipping-supplies" ||
       section === "business-ops" ||
@@ -518,6 +521,7 @@ export async function getPurchaseSpendSummary() {
     inventoryLineCount,
     operationsSpendCents,
     operationsLineCount,
+    bySection,
   };
 }
 

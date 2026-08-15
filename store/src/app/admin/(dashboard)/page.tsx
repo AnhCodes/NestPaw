@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   catalogItemTracksStock,
   inventorySectionLabels,
+  inventorySectionOrder,
 } from "@/lib/inventory-catalog";
 import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { formatPrice } from "@/lib/products";
@@ -12,10 +13,20 @@ import {
   listOrders,
 } from "@/lib/orders";
 import { AdminBadge, fulfillmentTone } from "@/components/admin-badge";
+import { SpendPieChart, type SpendSlice } from "@/components/spend-pie-chart";
 
 function formatCents(cents: number) {
   return formatPrice(cents / 100);
 }
+
+const spendColors = [
+  "var(--admin-accent)",
+  "color-mix(in oklab, var(--admin-accent) 70%, var(--admin-fg))",
+  "color-mix(in oklab, var(--admin-accent) 48%, var(--admin-muted))",
+  "color-mix(in oklab, var(--admin-warning-fg) 75%, var(--admin-accent))",
+  "var(--admin-muted)",
+  "color-mix(in oklab, var(--admin-accent) 30%, var(--admin-subtle))",
+];
 
 export default async function AdminOverviewPage() {
   const [summary, spend, orders, inventoryRows, catalog] = await Promise.all([
@@ -48,6 +59,26 @@ export default async function AdminOverviewPage() {
     })
     .filter((item) => item.low);
 
+  const totalSpendCents =
+    spend.inventorySpendCents + spend.operationsSpendCents;
+  const spendSlices: SpendSlice[] = inventorySectionOrder
+    .map((section, index) => ({
+      id: section,
+      label: inventorySectionLabels[section],
+      cents: spend.bySection[section] ?? 0,
+      color: spendColors[index] ?? spendColors[0],
+    }))
+    .filter((slice) => slice.cents > 0);
+
+  if ((spend.bySection.other ?? 0) > 0) {
+    spendSlices.push({
+      id: "other",
+      label: "Other",
+      cents: spend.bySection.other ?? 0,
+      color: "var(--admin-subtle)",
+    });
+  }
+
   return (
     <div>
       <h1 className="text-[1.65rem] font-semibold tracking-tight">Overview</h1>
@@ -55,7 +86,7 @@ export default async function AdminOverviewPage() {
         What needs attention, plus a quick read on sales.
       </p>
 
-      <div className="admin-card admin-stats mt-8">
+      <div className="admin-card admin-stats admin-stats-3 mt-8">
         <div className="admin-stat">
           <p className="text-xs font-medium text-[color:var(--admin-subtle)]">
             To ship
@@ -85,21 +116,27 @@ export default async function AdminOverviewPage() {
             Avg {formatCents(summary.averageOrderValueCents)}
           </p>
         </div>
-        <div className="admin-stat">
-          <p className="text-xs font-medium text-[color:var(--admin-subtle)]">
-            Spend
-          </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
-            {formatCents(
-              spend.inventorySpendCents + spend.operationsSpendCents,
-            )}
-          </p>
-          <p className="mt-1 text-xs text-[color:var(--admin-muted)]">
-            Inventory {formatCents(spend.inventorySpendCents)} · Ops{" "}
-            {formatCents(spend.operationsSpendCents)}
-          </p>
-        </div>
       </div>
+
+      <section className="admin-card mt-6 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-sm font-semibold">Spend</h2>
+          <div className="flex items-baseline gap-4">
+            <p className="text-2xl font-semibold tracking-tight">
+              {formatCents(totalSpendCents)}
+            </p>
+            <Link
+              href="/admin/inventory"
+              className="text-sm text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
+            >
+              Inventory
+            </Link>
+          </div>
+        </div>
+        <div className="mt-4">
+          <SpendPieChart slices={spendSlices} />
+        </div>
+      </section>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section>

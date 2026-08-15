@@ -47,13 +47,21 @@ export function AdminOverviewLoading() {
     <div aria-busy="true">
       <Status label="Loading overview" />
       <PageHeaderBones />
-      <div className="admin-card admin-stats mt-8">
-        {Array.from({ length: 4 }, (_, i) => (
+      <div className="admin-card admin-stats admin-stats-3 mt-8">
+        {Array.from({ length: 3 }, (_, i) => (
           <div key={i} className="admin-stat">
             <Bone className="h-3 w-14" />
             <Bone className="mt-3 h-7 w-20" />
           </div>
         ))}
+      </div>
+      <div className="admin-card mt-6 flex items-center gap-6 p-5">
+        <Bone className="h-40 w-40 shrink-0 rounded-full" />
+        <div className="min-w-0 flex-1 space-y-3">
+          <Bone className="h-4 w-28" />
+          <Bone className="h-4 w-40" />
+          <Bone className="h-4 w-32" />
+        </div>
       </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <div>
