@@ -17,10 +17,9 @@ export default async function NewInventoryPurchasePage() {
         Log purchase
       </h1>
       <p className="mt-2 max-w-2xl text-[color:var(--admin-muted)]">
-        Record product stock, packing supplies, and business buys (Amazon label
-        printer, ads, software, and similar). Stocked items increase admin
-        inventory; expense-only items are tracked for spend without changing
-        warehouse counts.
+        Record product stock, packing supplies, Higgsfield, and other
+        business buys. Stocked items increase admin inventory; expense-only
+        items are tracked for spend without changing warehouse counts.
       </p>
 
       <PurchaseLogForm catalog={catalog} />

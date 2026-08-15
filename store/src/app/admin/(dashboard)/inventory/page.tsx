@@ -1,14 +1,19 @@
+import Link from "next/link";
 import { InventoryPageActions } from "@/components/add-inventory-item-form";
 import {
   PurchaseLogsSection,
   type PurchaseLogView,
 } from "@/components/purchase-logs-section";
 import {
+  catalogItemLogsPurchases,
+  catalogItemTracksStock,
   getKitComponentIds,
   inventorySectionLabels,
+  inventorySectionOrder,
+  sectionTracksStock,
   type InventoryCatalogItem,
-  type InventorySection,
 } from "@/lib/inventory-catalog";
+import { stripePricing } from "@/lib/admin-tools";
 import {
   canRemoveInventoryItem,
   getMergedInventoryCatalog,
@@ -42,13 +47,7 @@ export default async function AdminInventoryPage({
   ]);
   const byId = new Map(rows.map((row) => [row.productId, row]));
   const catalogById = new Map(catalog.map((item) => [item.id, item]));
-  const sections: InventorySection[] = [
-    "store-products",
-    "treats",
-    "printed-materials",
-    "shipping-supplies",
-    "business-ops",
-  ];
+  const sections = inventorySectionOrder;
 
   const purchaseViews: PurchaseLogView[] = purchases.map((purchase) => ({
     id: purchase.id,
@@ -115,54 +114,95 @@ export default async function AdminInventoryPage({
 
       <div className="mt-8 space-y-8">
         {sections.map((section) => {
-          const items = catalog.filter(
-            (item) => item.section === section && item.tracksStock !== false,
-          );
+          const items = catalog.filter((item) => {
+            if (item.section !== section) return false;
+            return catalogItemTracksStock(item) || !sectionTracksStock(section);
+          });
+          const expenseOnly = !sectionTracksStock(section);
 
           return (
             <section key={section}>
               <h2 className="text-sm font-semibold text-[color:var(--admin-fg)]">
                 {inventorySectionLabels[section]}
               </h2>
+              {expenseOnly ? (
+                <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
+                  Higgsfield is logged as spend. Stripe is a per-checkout fee.
+                </p>
+              ) : null}
               <div className="admin-table-wrap mt-3">
-                <table className="min-w-[640px]">
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Stock</th>
-                      <th>Alert at</th>
-                      <th>Notes</th>
-                      <th>
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.length === 0 ? (
+                {expenseOnly ? (
+                  <table>
+                    <thead>
                       <tr>
-                        <td colSpan={5} className="text-[color:var(--admin-muted)]">
-                          No items in this section yet.
-                        </td>
+                        <th>Item</th>
+                        <th>Notes</th>
+                        <th>
+                          <span className="sr-only">Actions</span>
+                        </th>
                       </tr>
-                    ) : (
-                      items.map((item) => (
-                        <InventoryItemRow
-                          key={item.id}
-                          item={item}
-                          stock={byId.get(item.id)?.stock ?? 0}
-                          storefrontStock={byId.get(item.id)?.storefrontStock ?? 0}
-                          threshold={
-                            byId.get(item.id)?.lowStockThreshold ??
-                            item.lowStockThreshold
-                          }
-                          byId={byId}
-                          builtin={isBuiltinCatalogItem(item.id)}
-                          removable={canRemoveInventoryItem(item.id)}
-                        />
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {items.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="text-[color:var(--admin-muted)]">
+                            No items in this section yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        items.map((item) => (
+                          <ExpenseItemRow
+                            key={item.id}
+                            item={item}
+                            builtin={isBuiltinCatalogItem(item.id)}
+                            removable={canRemoveInventoryItem(item.id)}
+                          />
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table className="min-w-[640px]">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Stock</th>
+                        <th>Alert at</th>
+                        <th>Notes</th>
+                        <th>
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="text-[color:var(--admin-muted)]">
+                            No items in this section yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        items.map((item) => (
+                          <InventoryItemRow
+                            key={item.id}
+                            item={item}
+                            stock={byId.get(item.id)?.stock ?? 0}
+                            storefrontStock={
+                              byId.get(item.id)?.storefrontStock ?? 0
+                            }
+                            threshold={
+                              byId.get(item.id)?.lowStockThreshold ??
+                              item.lowStockThreshold
+                            }
+                            byId={byId}
+                            builtin={isBuiltinCatalogItem(item.id)}
+                            removable={canRemoveInventoryItem(item.id)}
+                          />
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </section>
           );
@@ -267,6 +307,69 @@ function InventoryItemRow({
           <button form={`save-${item.id}`} type="submit" className="btn-primary">
             Save
           </button>
+          {removable ? (
+            <button
+              form={`delete-${item.id}`}
+              type="submit"
+              className="rounded-md px-2 py-1.5 text-xs font-medium text-[color:var(--admin-danger-fg)] hover:underline"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function ExpenseItemRow({
+  item,
+  builtin,
+  removable,
+}: {
+  item: InventoryCatalogItem;
+  builtin: boolean;
+  removable: boolean;
+}) {
+  const logsPurchases = catalogItemLogsPurchases(item);
+
+  return (
+    <tr>
+      <td>
+        {removable ? (
+          <form
+            id={`delete-${item.id}`}
+            action={`/api/admin/inventory/${item.id}`}
+            method="post"
+          >
+            <input type="hidden" name="intent" value="delete" />
+            <input type="hidden" name="redirectTo" value="/admin/inventory" />
+          </form>
+        ) : null}
+        <p className="font-medium">{item.name}</p>
+        <p className="text-xs text-[color:var(--admin-subtle)]">{item.id}</p>
+      </td>
+      <td className="text-xs text-[color:var(--admin-muted)]">
+        {logsPurchases
+          ? builtin
+            ? "Expense only"
+            : "Custom · expense only"
+          : `${stripePricing.headline} per domestic card`}
+      </td>
+      <td className="text-right">
+        <div className="flex justify-end gap-2">
+          {logsPurchases ? (
+            <Link
+              href="/admin/inventory/purchases/new"
+              className="btn-dark-ghost"
+            >
+              Log purchase
+            </Link>
+          ) : (
+            <Link href="/admin/tools#stripe" className="btn-dark-ghost">
+              Pricing details
+            </Link>
+          )}
           {removable ? (
             <button
               form={`delete-${item.id}`}

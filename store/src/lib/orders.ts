@@ -494,7 +494,9 @@ export async function getPurchaseSpendSummary() {
     const catalogItem = catalogById.get(line.inventoryItemId);
     const section = catalogItem?.section;
     const isOperations =
-      section === "shipping-supplies" || section === "business-ops";
+      section === "shipping-supplies" ||
+      section === "business-ops" ||
+      section === "tools-services";
 
     if (isOperations) {
       operationsSpendCents += line.lineCostCents;

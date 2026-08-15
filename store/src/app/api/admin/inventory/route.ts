@@ -5,16 +5,14 @@ import {
   ADMIN_COOKIE,
   verifyAdminSessionToken,
 } from "@/lib/admin-auth";
-import type { InventorySection } from "@/lib/inventory-catalog";
+import {
+  inventorySectionOrder,
+  sectionTracksStock,
+  type InventorySection,
+} from "@/lib/inventory-catalog";
 import { createCustomInventoryItem } from "@/lib/inventory";
 
-const sections = new Set<InventorySection>([
-  "store-products",
-  "treats",
-  "printed-materials",
-  "shipping-supplies",
-  "business-ops",
-]);
+const sections = new Set<InventorySection>(inventorySectionOrder);
 
 async function requireAdmin() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
@@ -31,7 +29,9 @@ export async function POST(request: Request) {
   const section = String(form.get("section") ?? "") as InventorySection;
   const stock = Number(form.get("stock") ?? 0);
   const lowStockThreshold = Number(form.get("lowStockThreshold") ?? 3);
-  const tracksStock = String(form.get("tracksStock") ?? "true") !== "false";
+  const tracksStock = sectionTracksStock(section)
+    ? String(form.get("tracksStock") ?? "true") !== "false"
+    : false;
 
   if (!sections.has(section)) {
     return NextResponse.json({ error: "Invalid section" }, { status: 400 });

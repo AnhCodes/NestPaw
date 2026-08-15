@@ -4,7 +4,9 @@ import { getDb, isDatabaseConfigured } from "@/lib/db";
 import {
   getKitComponentIds,
   inventoryCatalog,
+  inventorySectionOrder,
   isKitStorefrontProduct,
+  sectionTracksStock,
   type InventoryCatalogItem,
   type InventorySection,
 } from "@/lib/inventory-catalog";
@@ -13,13 +15,7 @@ import { products } from "@/lib/products";
 
 export type StockMap = Record<string, number>;
 
-const inventorySections = new Set<InventorySection>([
-  "store-products",
-  "treats",
-  "printed-materials",
-  "shipping-supplies",
-  "business-ops",
-]);
+const inventorySections = new Set<InventorySection>(inventorySectionOrder);
 
 function stockById(
   rows: { productId: string; stock: number; storefrontStock: number }[],
@@ -240,7 +236,8 @@ export async function createCustomInventoryItem(input: {
 
   const stock = input.stock ?? 0;
   const lowStockThreshold = input.lowStockThreshold ?? 3;
-  const tracksStock = input.tracksStock !== false;
+  const tracksStock =
+    sectionTracksStock(input.section) && input.tracksStock !== false;
   const now = new Date();
 
   await db.insert(inventory).values({

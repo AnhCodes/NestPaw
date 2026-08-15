@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { ADMIN_COOKIE, verifyAdminSessionToken } from "@/lib/admin-auth";
 import { createInventoryPurchase } from "@/lib/orders";
 import { getMergedInventoryCatalog } from "@/lib/inventory";
+import { purchaseVendors } from "@/lib/inventory-catalog";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -32,12 +33,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const allowedVendors = new Set(["Alibaba", "Amazon", "Print shop", "Other"]);
+  const allowedVendors = new Set<string>(purchaseVendors);
   const vendorRaw = String(body.vendor ?? "Amazon").trim();
   const vendor = allowedVendors.has(vendorRaw) ? vendorRaw : null;
   if (!vendor) {
     return NextResponse.json(
-      { error: "Vendor must be Alibaba, Amazon, Print shop, or Other" },
+      { error: `Vendor must be ${purchaseVendors.join(", ")}` },
       { status: 400 },
     );
   }

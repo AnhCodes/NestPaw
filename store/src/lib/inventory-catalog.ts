@@ -5,7 +5,8 @@ export type InventorySection =
   | "treats"
   | "printed-materials"
   | "shipping-supplies"
-  | "business-ops";
+  | "business-ops"
+  | "tools-services";
 
 export type InventoryCatalogItem = {
   id: string;
@@ -19,7 +20,21 @@ export type InventoryCatalogItem = {
    * Use for one-off tools, ads, software, and other business expenses.
    */
   tracksStock?: boolean;
+  /**
+   * When false, this item is not offered on the purchase log form.
+   * Use for processors like Stripe whose cost is a checkout fee, not a buy.
+   */
+  logPurchases?: boolean;
 };
+
+export const inventorySectionOrder: InventorySection[] = [
+  "store-products",
+  "treats",
+  "printed-materials",
+  "shipping-supplies",
+  "business-ops",
+  "tools-services",
+];
 
 export const inventorySectionLabels: Record<InventorySection, string> = {
   "store-products": "Store products",
@@ -27,7 +42,22 @@ export const inventorySectionLabels: Record<InventorySection, string> = {
   "printed-materials": "Printed materials",
   "shipping-supplies": "Shipping supplies",
   "business-ops": "Business & equipment",
+  "tools-services": "Tools and Services",
 };
+
+export const purchaseVendors = [
+  "Alibaba",
+  "Amazon",
+  "Print shop",
+  "Higgsfield",
+  "Other",
+] as const;
+
+export type PurchaseVendor = (typeof purchaseVendors)[number];
+
+export function sectionTracksStock(section: InventorySection) {
+  return section !== "tools-services";
+}
 
 /** Storefront kits assembled from multiple warehouse items. */
 export const kitAssemblies: Record<string, string[]> = {
@@ -139,16 +169,31 @@ export const inventoryCatalog: InventoryCatalogItem[] = [
     tracksStock: false,
   },
   {
-    id: "software-tools",
-    name: "Software / tools subscription",
+    id: "other-business-purchase",
+    name: "Other business purchase",
     section: "business-ops",
     lowStockThreshold: 0,
     tracksStock: false,
   },
   {
-    id: "other-business-purchase",
-    name: "Other business purchase",
-    section: "business-ops",
+    id: "stripe",
+    name: "Stripe",
+    section: "tools-services",
+    lowStockThreshold: 0,
+    tracksStock: false,
+    logPurchases: false,
+  },
+  {
+    id: "higgsfield",
+    name: "Higgsfield",
+    section: "tools-services",
+    lowStockThreshold: 0,
+    tracksStock: false,
+  },
+  {
+    id: "software-tools",
+    name: "Other software / tools",
+    section: "tools-services",
     lowStockThreshold: 0,
     tracksStock: false,
   },
@@ -156,6 +201,10 @@ export const inventoryCatalog: InventoryCatalogItem[] = [
 
 export function catalogItemTracksStock(item: InventoryCatalogItem) {
   return item.tracksStock !== false;
+}
+
+export function catalogItemLogsPurchases(item: InventoryCatalogItem) {
+  return item.logPurchases !== false;
 }
 
 export function getInventoryCatalogItem(id: string) {

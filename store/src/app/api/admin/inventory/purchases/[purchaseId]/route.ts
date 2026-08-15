@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ADMIN_COOKIE, verifyAdminSessionToken } from "@/lib/admin-auth";
 import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { updateInventoryPurchase } from "@/lib/orders";
+import { purchaseVendors } from "@/lib/inventory-catalog";
 
 async function requireAdmin() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
@@ -21,12 +22,12 @@ type PurchaseBody = {
 };
 
 async function parsePurchaseBody(body: PurchaseBody) {
-  const allowedVendors = new Set(["Alibaba", "Amazon", "Print shop", "Other"]);
+  const allowedVendors = new Set<string>(purchaseVendors);
   const vendorRaw = String(body.vendor ?? "Amazon").trim();
   const vendor = allowedVendors.has(vendorRaw) ? vendorRaw : null;
   if (!vendor) {
     return {
-      error: "Vendor must be Alibaba, Amazon, Print shop, or Other",
+      error: `Vendor must be ${purchaseVendors.join(", ")}`,
     } as const;
   }
 

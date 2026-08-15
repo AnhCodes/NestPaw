@@ -125,6 +125,16 @@ export function AdminInventoryLoading() {
   );
 }
 
+export function AdminToolsLoading() {
+  return (
+    <div aria-busy="true">
+      <Status label="Loading tools and services" />
+      <PageHeaderBones />
+      <TableLoading rows={5} />
+    </div>
+  );
+}
+
 export function AdminFormLoading({ label }: { label: string }) {
   return (
     <div aria-busy="true">

@@ -35,6 +35,7 @@ const nav = [
   { href: "/admin/customers", label: "Customers", icon: CustomersIcon },
   { href: "/admin/inventory", label: "Inventory", icon: InventoryIcon },
   { href: "/admin/investors", label: "Investors", icon: InvestorsIcon },
+  { href: "/admin/tools", label: "Tools and Services", icon: ToolsIcon },
 ];
 
 function OverviewIcon() {
@@ -81,6 +82,15 @@ function InvestorsIcon() {
     <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
       <path d="M4 14.5 8 10l3 3 5-6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M4 16.5h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ToolsIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
+      <rect x="2.5" y="7" width="10" height="10" rx="1.4" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 7V6a1.5 1.5 0 0 1 1.5-1.5H16A1.5 1.5 0 0 1 17.5 6v7.5A1.5 1.5 0 0 1 16 15h-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }

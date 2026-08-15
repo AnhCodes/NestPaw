@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import {
+  catalogItemLogsPurchases,
   catalogItemTracksStock,
   inventorySectionLabels,
+  inventorySectionOrder,
+  purchaseVendors,
   type InventoryCatalogItem,
-  type InventorySection,
+  type PurchaseVendor,
 } from "@/lib/inventory-catalog";
 import { formatPrice } from "@/lib/products";
 
@@ -28,16 +31,8 @@ export type PurchaseLogFormInitial = {
   }[];
 };
 
-const sections: InventorySection[] = [
-  "store-products",
-  "treats",
-  "printed-materials",
-  "shipping-supplies",
-  "business-ops",
-];
-
-const vendors = ["Alibaba", "Amazon", "Print shop", "Other"] as const;
-type Vendor = (typeof vendors)[number];
+const vendors = purchaseVendors;
+type Vendor = PurchaseVendor;
 
 function newLine(catalog: InventoryCatalogItem[]): PurchaseLine {
   return {
@@ -195,7 +190,7 @@ export function PurchaseLogForm({
             <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
               {isEdit
                 ? "Fix quantities, prices, or items. Admin stock will adjust to match the corrected log."
-                : "Log product stock, shipping supplies, or business buys like a label printer. Expense-only items count toward spend without changing warehouse stock."}
+                : "Log product stock, shipping supplies, Higgsfield, or other business buys. Expense-only items count toward spend without changing warehouse stock."}
             </p>
           </div>
           <button
@@ -230,9 +225,11 @@ export function PurchaseLogForm({
                     }
                     className="admin-input"
                   >
-                    {sections.map((section) => {
+                    {inventorySectionOrder.map((section) => {
                       const items = catalog.filter(
-                        (item) => item.section === section,
+                        (item) =>
+                          item.section === section &&
+                          catalogItemLogsPurchases(item),
                       );
                       if (items.length === 0) return null;
                       return (

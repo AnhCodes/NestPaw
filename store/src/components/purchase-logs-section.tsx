@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { formatPrice } from "@/lib/products";
+import { purchaseVendors } from "@/lib/inventory-catalog";
 
 export type PurchaseLogItemView = {
   id: string;
@@ -23,7 +24,7 @@ export type PurchaseLogView = {
   items: PurchaseLogItemView[];
 };
 
-const vendors = ["All", "Alibaba", "Amazon", "Print shop", "Other"] as const;
+const vendors = ["All", ...purchaseVendors] as const;
 const sorts = [
   { id: "newest", label: "Newest first" },
   { id: "oldest", label: "Oldest first" },
