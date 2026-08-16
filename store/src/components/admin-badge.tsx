@@ -19,3 +19,10 @@ export function paymentTone(status: string | null | undefined) {
   if (status === "refunded" || status === "canceled") return "danger" as const;
   return "neutral" as const;
 }
+
+export function returnTone(status: string) {
+  if (status === "approved" || status === "received") return "ok" as const;
+  if (status === "denied") return "danger" as const;
+  if (status === "closed") return "neutral" as const;
+  return "warn" as const;
+}

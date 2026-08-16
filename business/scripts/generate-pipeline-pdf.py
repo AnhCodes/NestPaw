@@ -381,8 +381,8 @@ def build():
             ),
             Spacer(1, 4),
             callout(
-                "<b>Catalog SKUs:</b> Shedding Brush Kit ($24) · Forage Snuffle Mat ($69) · "
-                "Silicone Slow Feeder Mat ($34) · Quiet Nail Grinder ($25) · Suction Lick Mat ($14). "
+                "<b>Catalog SKUs:</b> Shedding Brush Kit ($29) · Forage Snuffle Mat ($44) · "
+                "Silicone Slow Feeder Mat ($29) · Quiet Nail Grinder ($29) · Suction Lick Mat ($14). "
                 f"Kits use warehouse parts (brush kit = deshedding brush + grooming {nb('glove')}).",
                 s,
             ),

@@ -16,10 +16,10 @@ function toDateInputValue(date: Date) {
 }
 
 const catalogNotes: Record<string, { landed: string; contribution: string }> = {
-  "shed-brush": { landed: "~$4.11", contribution: "Strong" },
-  "snuffle-mat": { landed: "~$14", contribution: "Solid" },
-  "puzzle-feeder": { landed: "~$9", contribution: "Strong" },
-  "nail-trimmer": { landed: "~$11", contribution: "Solid" },
+  "shed-brush": { landed: "~$13", contribution: "Strong" },
+  "snuffle-mat": { landed: "~$21", contribution: "Strong" },
+  "puzzle-feeder": { landed: "~$13", contribution: "Strong" },
+  "nail-trimmer": { landed: "~$14", contribution: "Solid" },
   "lick-mat": { landed: "Low $", contribution: "Entry / attach" },
 };
 

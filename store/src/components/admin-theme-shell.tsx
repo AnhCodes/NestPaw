@@ -31,6 +31,7 @@ function setStoredTheme(next: Theme) {
 
 const nav = [
   { href: "/admin", label: "Overview", icon: OverviewIcon },
+  { href: "/admin/spending", label: "Spending", icon: SpendingIcon },
   { href: "/admin/orders", label: "Orders and Fulfillment", icon: FulfillmentIcon },
   { href: "/admin/customers", label: "Customers", icon: CustomersIcon },
   { href: "/admin/inventory", label: "Inventory", icon: InventoryIcon },
@@ -45,6 +46,18 @@ function OverviewIcon() {
       <rect x="11" y="2.5" width="6.5" height="6.5" rx="1.4" stroke="currentColor" strokeWidth="1.5" />
       <rect x="2.5" y="11" width="6.5" height="6.5" rx="1.4" stroke="currentColor" strokeWidth="1.5" />
       <rect x="11" y="11" width="6.5" height="6.5" rx="1.4" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function SpendingIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden>
+      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M10 10V3.2A6.8 6.8 0 0 1 16.3 13.4L10 10Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }

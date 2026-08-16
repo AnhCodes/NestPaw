@@ -1,4 +1,4 @@
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, ne, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import {
   customers,
@@ -459,6 +459,42 @@ export async function getRevenueSummary() {
     orderCount > 0 ? Math.round(revenueCents / orderCount) : 0;
 
   return { orderCount, revenueCents, averageOrderValueCents };
+}
+
+export async function getReturnSummary() {
+  const db = getDb();
+  const [row] = await db
+    .select({
+      returnCount: sql<number>`count(*) filter (where ${orders.returnStatus} <> 'none')::int`,
+      openReturnCount: sql<number>`count(*) filter (where ${orders.returnStatus} in ('requested', 'reviewing', 'approved', 'received'))::int`,
+      closedReturnCount: sql<number>`count(*) filter (where ${orders.returnStatus} = 'closed')::int`,
+      deniedReturnCount: sql<number>`count(*) filter (where ${orders.returnStatus} = 'denied')::int`,
+      returnCents: sql<number>`coalesce(sum(${orders.amountTotal}) filter (where ${orders.returnStatus} in ('approved', 'received', 'closed')), 0)::int`,
+    })
+    .from(orders);
+
+  const returnOrders = await db
+    .select({
+      id: orders.id,
+      email: customers.email,
+      amountTotal: orders.amountTotal,
+      returnStatus: orders.returnStatus,
+      returnRequestedAt: orders.returnRequestedAt,
+      createdAt: orders.createdAt,
+    })
+    .from(orders)
+    .innerJoin(customers, eq(orders.customerId, customers.id))
+    .where(ne(orders.returnStatus, "none"))
+    .orderBy(desc(orders.updatedAt));
+
+  return {
+    returnCount: row?.returnCount ?? 0,
+    openReturnCount: row?.openReturnCount ?? 0,
+    closedReturnCount: row?.closedReturnCount ?? 0,
+    deniedReturnCount: row?.deniedReturnCount ?? 0,
+    returnCents: row?.returnCents ?? 0,
+    orders: returnOrders,
+  };
 }
 
 export async function getPurchaseSpendSummary() {

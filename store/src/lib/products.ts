@@ -35,7 +35,7 @@ export const products: Product[] = [
     tagline: "Less fur on the couch. More calm in the routine.",
     description:
       "A dual-sided deshedding brush and glove kit designed for everyday coat care at home. Remove loose undercoat in minutes without turning grooming into a battle.",
-    price: 24,
+    price: 29,
     stock: 0,
     category: "groom",
     image: "/products/nestpaw-shedding-brush-kit-fill-v3.png",
@@ -65,8 +65,8 @@ export const products: Product[] = [
     tagline: "Ten quiet minutes, earned through the nose.",
     description:
       "A washable foraging mat that turns mealtime treats into a calming scent game. Built for rainy evenings, restless energy, and dogs who need a job indoors.",
-    // Alibaba ~$45/pc — $28 was underwater after Stripe/returns; $69 leaves room before freight.
-    price: 69,
+    // Alibaba $8.60/pc at 90–999. $44 still keeps ~$8 after $12+$12 freight.
+    price: 44,
     stock: 0,
     category: "calm",
     image: "/products/nestpaw-forage-snuffle-mat-hero.png",
@@ -92,7 +92,7 @@ export const products: Product[] = [
     tagline: "Dinner that lasts longer than four seconds.",
     description:
       "A food-grade silicone feeding mat with a built-in slow bowl and lick zones. Slows inhale-speed eaters, contains spills, and turns mealtime into calm enrichment.",
-    price: 34,
+    price: 29,
     stock: 0,
     category: "calm",
     image: "/products/nestpaw-slow-feeder-mat-fill.png",
@@ -118,7 +118,7 @@ export const products: Product[] = [
     tagline: "Easier nail care without the clipper panic.",
     description:
       "A compact electric nail grinder for at-home touch-ups. Soft approach for dogs who tense up at the sight of traditional clippers.",
-    price: 25,
+    price: 29,
     stock: 0,
     category: "groom",
     image: "/products/nestpaw-quiet-nail-grinder-fill.png",

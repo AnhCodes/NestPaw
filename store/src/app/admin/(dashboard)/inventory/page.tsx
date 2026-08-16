@@ -370,6 +370,11 @@ function ExpenseItemRow({
               Pricing details
             </Link>
           )}
+          {item.id === "higgsfield" ? (
+            <Link href="/admin/tools#higgsfield" className="btn-dark-ghost">
+              Pricing details
+            </Link>
+          ) : null}
           {removable ? (
             <button
               form={`delete-${item.id}`}

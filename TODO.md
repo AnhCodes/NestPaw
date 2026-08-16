@@ -2,7 +2,8 @@
 
 ## While waiting on stock
 
-- [ ] Print the dog calm tips card (4×6 cardstock from `store/public/packaging/nestpaw-calm-tips-card.png` — artwork is final)
+- [ ] Set up NestPaw Instagram and TikTok (after the first stills exist — do not launch empty profiles)
+- [ ] Generate Shedding Brush Kit carousel stills for first posts
 
 ## When stock arrives — soft launch, test the whole pipeline start to finish
 
@@ -15,8 +16,4 @@
 
 - [ ] Improve broader SEO after first sales data
 - [ ] Reorder winners in bulk once samples convert
-- [ ] Study the winning ads
-- [ ] Integrate Runway AI to make ads for the site
-- [ ] Look into ways to automatically publish ads on a scheduled dates
-- [ ] Start generating marketing videos once the site is fully live
-- [ ] Checkout Higgsfield MCP
+- [ ] Generate more marketing content

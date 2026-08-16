@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   catalogItemTracksStock,
   inventorySectionLabels,
-  inventorySectionOrder,
 } from "@/lib/inventory-catalog";
 import { getMergedInventoryCatalog } from "@/lib/inventory";
 import { formatPrice } from "@/lib/products";
@@ -13,20 +12,12 @@ import {
   listOrders,
 } from "@/lib/orders";
 import { AdminBadge, fulfillmentTone } from "@/components/admin-badge";
-import { SpendPieChart, type SpendSlice } from "@/components/spend-pie-chart";
+import { SpendPieChart } from "@/components/spend-pie-chart";
+import { buildSpendSlices } from "@/lib/admin-spend";
 
 function formatCents(cents: number) {
   return formatPrice(cents / 100);
 }
-
-const spendColors = [
-  "var(--admin-accent)",
-  "color-mix(in oklab, var(--admin-accent) 70%, var(--admin-fg))",
-  "color-mix(in oklab, var(--admin-accent) 48%, var(--admin-muted))",
-  "color-mix(in oklab, var(--admin-warning-fg) 75%, var(--admin-accent))",
-  "var(--admin-muted)",
-  "color-mix(in oklab, var(--admin-accent) 30%, var(--admin-subtle))",
-];
 
 export default async function AdminOverviewPage() {
   const [summary, spend, orders, inventoryRows, catalog] = await Promise.all([
@@ -61,23 +52,7 @@ export default async function AdminOverviewPage() {
 
   const totalSpendCents =
     spend.inventorySpendCents + spend.operationsSpendCents;
-  const spendSlices: SpendSlice[] = inventorySectionOrder
-    .map((section, index) => ({
-      id: section,
-      label: inventorySectionLabels[section],
-      cents: spend.bySection[section] ?? 0,
-      color: spendColors[index] ?? spendColors[0],
-    }))
-    .filter((slice) => slice.cents > 0);
-
-  if ((spend.bySection.other ?? 0) > 0) {
-    spendSlices.push({
-      id: "other",
-      label: "Other",
-      cents: spend.bySection.other ?? 0,
-      color: "var(--admin-subtle)",
-    });
-  }
+  const spendSlices = buildSpendSlices(spend.bySection);
 
   return (
     <div>
@@ -126,10 +101,10 @@ export default async function AdminOverviewPage() {
               {formatCents(totalSpendCents)}
             </p>
             <Link
-              href="/admin/inventory"
+              href="/admin/spending"
               className="text-sm text-[color:var(--admin-muted)] hover:text-[color:var(--admin-fg)]"
             >
-              Inventory
+              Details
             </Link>
           </div>
         </div>

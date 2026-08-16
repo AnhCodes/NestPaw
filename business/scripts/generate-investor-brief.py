@@ -296,10 +296,10 @@ def build():
                 table(
                     ["Product", "Price", "Landed cost*", "Contribution*"],
                     [
-                        ["Shedding Brush Kit", "$24", "~$4.11", "Strong"],
-                        ["Forage Snuffle Mat", "$28", "~$14", "Solid"],
-                        ["Silicone Slow Feeder Mat", "$34", "~$9", "Strong"],
-                        ["Quiet Nail Grinder", "$25", "~$11", "Solid"],
+                        ["Shedding Brush Kit", "$29", "~$13", "Strong"],
+                        ["Forage Snuffle Mat", "$44", "~$21", "Strong"],
+                        ["Silicone Slow Feeder Mat", "$29", "~$13", "Strong"],
+                        ["Quiet Nail Grinder", "$29", "~$14", "Solid"],
                         ["Suction Lick Mat", "$14", "Low $", "Entry / attach"],
                     ],
                     s,

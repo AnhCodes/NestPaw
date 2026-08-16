@@ -138,7 +138,47 @@ export function AdminToolsLoading() {
     <div aria-busy="true">
       <Status label="Loading tools and services" />
       <PageHeaderBones />
-      <TableLoading rows={5} />
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <TableLoading rows={5} />
+        <TableLoading rows={6} />
+      </div>
+    </div>
+  );
+}
+
+export function AdminSpendingLoading() {
+  return (
+    <div aria-busy="true">
+      <Status label="Loading spending" />
+      <PageHeaderBones />
+      <div className="admin-card admin-stats admin-stats-3 mt-8">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="admin-stat">
+            <Bone className="h-3 w-14" />
+            <Bone className="mt-3 h-7 w-20" />
+          </div>
+        ))}
+      </div>
+      <div className="admin-card admin-stats admin-stats-3 mt-6">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="admin-stat">
+            <Bone className="h-3 w-14" />
+            <Bone className="mt-3 h-7 w-20" />
+          </div>
+        ))}
+      </div>
+      <div className="admin-card mt-6 flex items-center gap-6 p-5">
+        <Bone className="h-52 w-52 shrink-0 rounded-full" />
+        <div className="min-w-0 flex-1 space-y-3">
+          <Bone className="h-4 w-28" />
+          <Bone className="h-4 w-40" />
+          <Bone className="h-4 w-32" />
+        </div>
+      </div>
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <TableLoading rows={5} />
+        <TableLoading rows={4} />
+      </div>
     </div>
   );
 }

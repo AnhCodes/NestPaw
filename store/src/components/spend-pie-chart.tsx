@@ -1,11 +1,6 @@
 "use client";
 
-export type SpendSlice = {
-  id: string;
-  label: string;
-  cents: number;
-  color: string;
-};
+import type { SpendSlice } from "@/lib/admin-spend";
 
 function formatCents(cents: number) {
   return new Intl.NumberFormat("en-US", {
@@ -35,14 +30,20 @@ function slicePath(
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y} Z`;
 }
 
-const SIZE = 160;
-const CX = SIZE / 2;
-const CY = SIZE / 2;
-const R = 72;
+const DEFAULT_SIZE = 160;
 
-export function SpendPieChart({ slices }: { slices: SpendSlice[] }) {
+export function SpendPieChart({
+  slices,
+  size = DEFAULT_SIZE,
+}: {
+  slices: SpendSlice[];
+  size?: number;
+}) {
   const total = slices.reduce((sum, slice) => sum + slice.cents, 0);
   const visible = slices.filter((slice) => slice.cents > 0);
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2 - 8;
 
   if (total <= 0 || visible.length === 0) {
     return (
@@ -63,18 +64,19 @@ export function SpendPieChart({ slices }: { slices: SpendSlice[] }) {
   return (
     <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
       <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="h-40 w-40 shrink-0"
+        viewBox={`0 0 ${size} ${size}`}
+        className="shrink-0"
+        style={{ width: size, height: size }}
         role="img"
         aria-label="Spend by category"
       >
         {visible.length === 1 ? (
-          <circle cx={CX} cy={CY} r={R} fill={visible[0].color} />
+          <circle cx={cx} cy={cy} r={r} fill={visible[0].color} />
         ) : (
           arcs.map((slice) => (
             <path
               key={slice.id}
-              d={slicePath(CX, CY, R, slice.startAngle, slice.endAngle)}
+              d={slicePath(cx, cy, r, slice.startAngle, slice.endAngle)}
               fill={slice.color}
             >
               <title>
