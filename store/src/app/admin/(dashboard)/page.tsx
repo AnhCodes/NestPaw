@@ -93,6 +93,61 @@ export default async function AdminOverviewPage() {
         </div>
       </div>
 
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold">Quick actions</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="admin-card flex flex-col p-4">
+            <p className="text-sm font-semibold">Pack orders</p>
+            <p className="mt-1 flex-1 text-sm text-[color:var(--admin-muted)]">
+              {unfulfilled.length === 0
+                ? "Nothing waiting to ship."
+                : `${unfulfilled.length} order${unfulfilled.length === 1 ? "" : "s"} to pack.`}
+            </p>
+            <Link
+              href="/admin/orders"
+              className={`mt-4 w-fit ${unfulfilled.length > 0 ? "btn-primary" : "btn-dark-ghost"}`}
+            >
+              Open orders
+            </Link>
+          </div>
+          <div className="admin-card flex flex-col p-4">
+            <p className="text-sm font-semibold">Log purchase</p>
+            <p className="mt-1 flex-1 text-sm text-[color:var(--admin-muted)]">
+              Record inventory, ops, or tool spend.
+            </p>
+            <Link
+              href="/admin/inventory/purchases/new"
+              className="btn-dark-ghost mt-4 w-fit"
+            >
+              New purchase
+            </Link>
+          </div>
+          <div className="admin-card flex flex-col p-4">
+            <p className="text-sm font-semibold">Spending report</p>
+            <p className="mt-1 flex-1 text-sm text-[color:var(--admin-muted)]">
+              Download purchases, revenue, and returns.
+            </p>
+            <a
+              href="/api/admin/spending/report"
+              className="btn-dark-ghost mt-4 w-fit"
+            >
+              Download PDF
+            </a>
+          </div>
+          <div className="admin-card flex flex-col p-4">
+            <p className="text-sm font-semibold">Sync storefront</p>
+            <p className="mt-1 flex-1 text-sm text-[color:var(--admin-muted)]">
+              Push admin stock to the live shop.
+            </p>
+            <form action="/api/admin/inventory/sync" method="post" className="mt-4">
+              <button type="submit" className="btn-dark-ghost">
+                Sync now
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
       <section className="admin-card mt-6 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="text-sm font-semibold">Spend</h2>

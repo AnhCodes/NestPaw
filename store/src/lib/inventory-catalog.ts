@@ -191,6 +191,13 @@ export const inventoryCatalog: InventoryCatalogItem[] = [
     tracksStock: false,
   },
   {
+    id: "cursor",
+    name: "Cursor",
+    section: "tools-services",
+    lowStockThreshold: 0,
+    tracksStock: false,
+  },
+  {
     id: "software-tools",
     name: "Other software / tools",
     section: "tools-services",

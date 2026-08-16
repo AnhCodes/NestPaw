@@ -127,7 +127,7 @@ export default async function AdminInventoryPage({
               </h2>
               {expenseOnly ? (
                 <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
-                  Higgsfield is logged as spend. Stripe is a per-checkout fee.
+                  Higgsfield and Cursor are logged as spend. Stripe is a per-checkout fee.
                 </p>
               ) : null}
               <div className="admin-table-wrap mt-3">
@@ -370,8 +370,8 @@ function ExpenseItemRow({
               Pricing details
             </Link>
           )}
-          {item.id === "higgsfield" ? (
-            <Link href="/admin/tools#higgsfield" className="btn-dark-ghost">
+          {item.id === "higgsfield" || item.id === "cursor" ? (
+            <Link href={`/admin/tools#${item.id}`} className="btn-dark-ghost">
               Pricing details
             </Link>
           ) : null}

@@ -55,6 +55,15 @@ export function AdminOverviewLoading() {
           </div>
         ))}
       </div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="admin-card space-y-3 p-4">
+            <Bone className="h-4 w-24" />
+            <Bone className="h-3 w-40 max-w-full" />
+            <Bone className="h-9 w-28" />
+          </div>
+        ))}
+      </div>
       <div className="admin-card mt-6 flex items-center gap-6 p-5">
         <Bone className="h-40 w-40 shrink-0 rounded-full" />
         <div className="min-w-0 flex-1 space-y-3">
@@ -138,9 +147,10 @@ export function AdminToolsLoading() {
     <div aria-busy="true">
       <Status label="Loading tools and services" />
       <PageHeaderBones />
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-8 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <TableLoading rows={5} />
         <TableLoading rows={6} />
+        <TableLoading rows={5} />
       </div>
     </div>
   );

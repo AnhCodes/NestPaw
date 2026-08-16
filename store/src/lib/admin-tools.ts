@@ -33,3 +33,28 @@ export const higgsfieldPricing = {
     { name: "4,000 credits", price: "$190", note: "44% off · expires in 90 days" },
   ],
 } as const;
+
+/** Individual Cursor rates from cursor.com/pricing. */
+export const cursorPricing = {
+  headline: "Pro · $20/mo",
+  usedFor: "Store and admin development",
+  site: "https://cursor.com/pricing",
+  plans: [
+    { name: "Hobby", price: "Free", note: "Limited Agent requests" },
+    {
+      name: "Pro",
+      price: "$20/mo",
+      note: "$20 API usage · generous Grok and Composer",
+    },
+    {
+      name: "Pro+",
+      price: "$60/mo",
+      note: "$70 API usage · daily agent use",
+    },
+    {
+      name: "Ultra",
+      price: "$200/mo",
+      note: "$400 API usage · 20× Pro volume",
+    },
+  ],
+} as const;
