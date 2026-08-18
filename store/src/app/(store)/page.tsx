@@ -93,7 +93,7 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-8 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-10">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-10">
           {heroFeature ? <ProductCard product={heroFeature} /> : null}
           {sideFeatures.map((product) => (
             <ProductCard key={product.id} product={product} />
