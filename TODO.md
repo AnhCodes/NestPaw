@@ -2,9 +2,6 @@
 
 ## While waiting on stock
 
-- [ ] Set up NestPaw Instagram and TikTok (after the first stills exist — do not launch empty profiles)
-- [ ] Generate Shedding Brush Kit carousel stills for first posts
-
 ## When stock arrives — soft launch, test the whole pipeline start to finish
 
 - [ ] QA samples (quality, sizing notes, pack contents, real ship times)
@@ -17,3 +14,5 @@
 - [ ] Improve broader SEO after first sales data
 - [ ] Reorder winners in bulk once samples convert
 - [ ] Generate more marketing content
+- [ ] Set up NestPaw TikTok (same Reel + avatar — do not launch empty)
+- [ ] Generate Shedding Brush Kit carousel stills for first product posts

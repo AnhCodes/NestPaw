@@ -14,7 +14,7 @@ export function StockStatus({
       <span
         className={`inline-block rounded-full px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] backdrop-blur-sm ${
           available
-            ? "bg-mist/95 text-accent"
+            ? "bg-mist/95 text-ink"
             : "bg-ink/85 text-mist"
         }`}
       >
@@ -31,7 +31,7 @@ export function StockStatus({
         available
           ? light
             ? "text-mist/85"
-            : "text-accent"
+            : "text-leaf"
           : light
             ? "text-mist/55"
             : "text-ink/45"

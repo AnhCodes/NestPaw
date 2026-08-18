@@ -50,7 +50,7 @@ export default function ReturnsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-3xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <p className="text-xs uppercase tracking-[0.22em] text-leaf">Returns</p>
       <h1 className="mt-3 font-display text-4xl text-ink md:text-6xl">
         Submit a return request
@@ -68,7 +68,7 @@ export default function ReturnsPage() {
         .
       </p>
 
-      <section className="mt-10 border border-moss/15 bg-white/70 p-6 backdrop-blur-sm">
+      <section className="mt-10 border border-moss/15 bg-canvas p-6">
         {returnSent ? (
           <p className="border border-moss/15 bg-stone/70 p-6 text-ink/80">
             Your return request was submitted. We&apos;ll review it and follow up
@@ -80,27 +80,27 @@ export default function ReturnsPage() {
               required
               name="name"
               placeholder="Name"
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               required
               type="email"
               name="email"
               placeholder="Email used on order"
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               required
               name="orderId"
               placeholder="Order number"
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <textarea
               required
               name="message"
               placeholder="Tell us what happened and include any relevant details."
               rows={6}
-              className="w-full border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               type="text"
@@ -120,7 +120,7 @@ export default function ReturnsPage() {
             <button
               type="submit"
               disabled={returnLoading}
-              className="bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-2xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
             >
               {returnLoading ? "Submitting..." : "Submit return request"}
             </button>

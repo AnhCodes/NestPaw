@@ -18,6 +18,20 @@ Use this for every paid order until a 3PL is intentionally adopted later.
 
 **Target postage:** keep single-item Ground Advantage near the **$5.50** flat shipping rate when possible; free-shipping carts ($40+) are funded by product margin.
 
+### Package measurements (QA)
+
+Retail packs are **clear bags or boxes** from the supplier. Weigh/measure the unit as it arrives; add mailer + tips card when buying the label if you re-pack.
+
+| SKU | Weight | L × W × H (in) | Notes |
+|---|---|---|---|
+| Deshedding brush | 4.35 oz | 8 × 4 × 2 | Supplier pack |
+| Grooming glove | | | |
+| Brush kit (brush + glove + card, as shipped) | | | |
+| Forage Snuffle Mat | | | |
+| Silicone Slow Feeder Mat | 20 oz (1 lb 4 oz) | 10 × 15.5 × 1.5 | Supplier pack |
+| Quiet Nail Grinder (+ USB) | 7.15 oz | 8.5 × 3.5 × 1.5 | Box |
+| Suction Lick Mat | 4.2 oz | 8 × 8 × 0.5 | Supplier pack |
+
 ---
 
 ## Per order

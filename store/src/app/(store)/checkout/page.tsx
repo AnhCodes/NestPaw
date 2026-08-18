@@ -54,7 +54,7 @@ export default function CheckoutPage() {
 
   if (!hydrated) {
     return (
-      <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pt-32">
+      <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pt-16">
         <p className="text-ink/60">Loading checkout…</p>
       </div>
     );
@@ -62,7 +62,7 @@ export default function CheckoutPage() {
 
   if (lines.length === 0) {
     return (
-      <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pt-32">
+      <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pt-16">
         <h1 className="font-display text-4xl font-semibold text-ink">
           Checkout
         </h1>
@@ -75,7 +75,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <h1 className="font-display text-4xl font-semibold text-ink md:text-6xl">
         Checkout
       </h1>

@@ -24,11 +24,11 @@ function Status({ label }: { label: string }) {
 export function HomePageLoading() {
   return (
     <section
-      className="relative min-h-[100svh] overflow-hidden bg-ink"
+      className="relative min-h-[calc(100svh-4.75rem)] overflow-hidden bg-ink"
       aria-busy="true"
     >
       <Status label="Loading NestPaw" />
-      <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-7xl flex-col justify-end px-5 pb-14 pt-28 md:px-8 md:pb-20">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4.75rem)] max-w-7xl flex-col justify-end px-5 pb-14 pt-8 md:px-8 md:pb-20">
         <Bone tone="dark" className="h-[clamp(3.5rem,12vw,8.5rem)] w-[min(100%,22rem)] rounded-2xl" />
         <Bone tone="dark" className="mt-8 h-10 w-[min(100%,20rem)] md:h-12" />
         <Bone tone="dark" className="mt-4 h-16 w-[min(100%,24rem)]" />
@@ -39,7 +39,7 @@ export function HomePageLoading() {
 
 export function ShopPageLoading() {
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32" aria-busy="true">
+    <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16" aria-busy="true">
       <Status label="Loading the collection" />
       <div className="max-w-2xl border-b border-line pb-10">
         <Bone className="h-3 w-16" />
@@ -57,7 +57,7 @@ export function ShopPageLoading() {
 
 export function ProductPageLoading() {
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32" aria-busy="true">
+    <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16" aria-busy="true">
       <Status label="Loading product" />
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         <Bone className="aspect-[2/3] rounded-2xl" />
@@ -79,7 +79,7 @@ export function ProductPageLoading() {
 
 export function ArticlePageLoading() {
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32" aria-busy="true">
+    <div className="mx-auto max-w-3xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16" aria-busy="true">
       <Status label="Loading page" />
       <Bone className="h-3 w-20" />
       <Bone className="mt-4 h-12 w-4/5 md:h-16" />
@@ -98,7 +98,7 @@ export function ArticlePageLoading() {
 
 export function CartPageLoading() {
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32" aria-busy="true">
+    <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16" aria-busy="true">
       <Status label="Loading cart" />
       <Bone className="h-12 w-48 md:h-16 md:w-64" />
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.4fr_0.8fr]">
@@ -121,7 +121,7 @@ export function CartPageLoading() {
 
 export function CheckoutPageLoading() {
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32" aria-busy="true">
+    <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16" aria-busy="true">
       <Status label="Loading checkout" />
       <Bone className="h-12 w-56 md:h-16 md:w-72" />
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">

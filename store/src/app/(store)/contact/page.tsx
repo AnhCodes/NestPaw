@@ -49,7 +49,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-3xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <p className="text-xs uppercase tracking-[0.22em] text-leaf">Contact</p>
       <h1 className="mt-3 font-display text-4xl text-ink md:text-6xl">
         We&apos;re here to help
@@ -59,7 +59,7 @@ export default function ContactPage() {
         and we&apos;ll get back within one business day.
       </p>
 
-      <section className="mt-10 rounded-2xl border border-moss/15 bg-white/70 p-6 backdrop-blur-sm">
+      <section className="mt-10 rounded-2xl border border-moss/15 bg-canvas p-6">
         <h2 className="font-display text-2xl text-ink">Send us a message</h2>
         {contactSent ? (
           <p className="mt-6 rounded-2xl border border-moss/15 bg-stone/70 p-6 text-ink/80">
@@ -72,21 +72,21 @@ export default function ContactPage() {
               required
               name="name"
               placeholder="Name"
-              className="w-full rounded-xl border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full rounded-xl border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               required
               type="email"
               name="email"
               placeholder="Email"
-              className="w-full rounded-xl border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full rounded-xl border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <textarea
               required
               name="message"
               placeholder="How can we help?"
               rows={6}
-              className="w-full rounded-xl border border-moss/20 bg-white/80 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
+              className="w-full rounded-xl border border-moss/20 bg-canvas px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-moss/30"
             />
             <input
               type="text"
@@ -106,7 +106,7 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={contactLoading}
-              className="rounded-xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-2xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-50"
             >
               {contactLoading ? "Sending..." : "Send message"}
             </button>

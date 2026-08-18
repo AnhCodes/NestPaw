@@ -20,7 +20,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative min-h-[100svh] overflow-hidden bg-ink">
+      <section className="relative min-h-[calc(100svh-4.75rem)] overflow-hidden bg-ink">
         <Image
           src="https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=2000&q=80"
           alt="Calm dog resting at home"
@@ -30,12 +30,12 @@ export default async function HomePage() {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(8,14,12,0.72)_0%,rgba(8,14,12,0.35)_45%,rgba(8,14,12,0.55)_100%)]" />
-        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-7xl flex-col justify-end px-5 pb-14 pt-28 md:px-8 md:pb-20">
-          <p className="animate-fade font-display text-[clamp(3.5rem,12vw,8.5rem)] font-bold leading-[0.9] text-mist">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4.75rem)] max-w-7xl flex-col justify-end px-5 pb-14 pt-8 md:px-8 md:pb-20">
+          <p className="animate-fade font-brand text-[clamp(3.5rem,12vw,8.5rem)] font-bold leading-[0.9] text-mist">
             NestPaw
           </p>
-          <div className="mt-8 max-w-3xl md:mt-10">
-            <h1 className="animate-rise delay-1 max-w-xl font-display text-3xl font-semibold leading-[1.05] text-mist md:text-4xl lg:text-5xl">
+          <div className="mt-8 md:mt-10">
+            <h1 className="animate-rise delay-1 whitespace-nowrap font-display text-[clamp(1.15rem,4.6vw,3rem)] font-semibold leading-none text-mist">
               Calm comfort for dogs at home
             </h1>
             <p className="animate-rise delay-2 mt-4 max-w-md text-base leading-relaxed text-mist/80 md:text-lg">
@@ -60,7 +60,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
         <div className="grid gap-8 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-leaf">
               Why NestPaw
             </p>
             <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] text-ink md:text-6xl">
@@ -78,7 +78,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-5 pb-8 md:px-8">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-leaf">
               Featured
             </p>
             <h2 className="mt-3 font-display text-3xl font-semibold text-ink md:text-5xl">
@@ -118,7 +118,7 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
         <div className="grid overflow-hidden rounded-3xl border border-line bg-surface md:grid-cols-2">
-          <div className="relative min-h-[22rem] bg-[#d8e0da] md:min-h-[34rem]">
+          <div className="relative min-h-[22rem] bg-matte md:min-h-[34rem]">
             <Image
               src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=1400&q=80"
               alt="Dog enjoying enrichment at home"
@@ -128,7 +128,7 @@ export default async function HomePage() {
             />
           </div>
           <div className="flex flex-col justify-center px-6 py-12 md:px-12 md:py-16">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-leaf">
               Our promise
             </p>
             <h2 className="mt-4 font-display text-3xl font-semibold leading-[1.05] text-ink md:text-5xl">

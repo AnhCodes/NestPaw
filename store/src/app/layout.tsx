@@ -1,16 +1,24 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
-import { Manrope, Syne } from "next/font/google";
+import { Fraunces, Nunito_Sans, Syne } from "next/font/google";
 import { getSiteUrl, siteDescription, siteName } from "@/lib/site";
 import "./globals.css";
 
-const display = Syne({
-  variable: "--font-display",
+/** Logo + hero wordmark — matches the IG lockup. */
+const brand = Syne({
+  variable: "--font-brand",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["600", "700", "800"],
 });
 
-const body = Manrope({
+/** Headlines — soft serif, home/gift rather than tech. */
+const display = Fraunces({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const body = Nunito_Sans({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -51,7 +59,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
+    <html
+      lang="en"
+      className={`${brand.variable} ${display.variable} ${body.variable} h-full`}
+    >
       <body className="flex min-h-full flex-col antialiased">
         {children}
         <Analytics />

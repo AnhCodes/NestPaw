@@ -46,10 +46,10 @@ export default async function ProductPage({ params }: { params: Params }) {
       : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         <div className="space-y-3">
-          <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-stone">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-3xl bg-matte">
             <Image
               src={product.image}
               alt={product.name}
@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               {product.gallery.slice(1).map((src) => (
                 <div
                   key={src}
-                  className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-stone"
+                  className="relative aspect-[2/3] overflow-hidden rounded-3xl bg-matte"
                 >
                   <Image
                     src={src}
@@ -84,7 +84,7 @@ export default async function ProductPage({ params }: { params: Params }) {
 
         <div>
           {product.badge ? (
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-leaf">
               {product.badge}
             </p>
           ) : null}
@@ -149,8 +149,8 @@ export default async function ProductPage({ params }: { params: Params }) {
           </div>
 
           {pairingNudge ? (
-            <div className="mt-10 rounded-2xl border border-line bg-surface p-6">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
+            <div className="mt-10 rounded-3xl border border-line bg-surface p-6">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-leaf">
                 Pair it
               </p>
               <p className="mt-2 font-display text-2xl font-semibold text-ink">

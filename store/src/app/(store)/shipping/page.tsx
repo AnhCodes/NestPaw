@@ -11,7 +11,7 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function ShippingPage() {
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-3xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <p className="text-xs uppercase tracking-[0.22em] text-leaf">Policies</p>
       <h1 className="mt-3 font-display text-4xl text-ink md:text-6xl">
         Shipping & returns
@@ -61,13 +61,13 @@ export default function ShippingPage() {
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
           href="/returns"
-          className="inline-flex bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+          className="inline-flex rounded-2xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
         >
           Submit a return request
         </Link>
         <Link
           href="/contact"
-          className="inline-flex border border-moss/25 bg-white/70 px-6 py-3.5 text-sm font-medium text-ink transition hover:border-moss/40 hover:bg-white"
+          className="inline-flex rounded-2xl border border-moss/25 bg-surface px-6 py-3.5 text-sm font-medium text-ink transition hover:border-accent hover:bg-accent"
         >
           Contact support
         </Link>

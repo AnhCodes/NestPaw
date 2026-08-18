@@ -32,9 +32,9 @@ export default async function CheckoutSuccessPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-20 pt-28 md:px-8 md:pt-32">
+    <div className="mx-auto max-w-2xl px-5 pb-20 pt-12 md:px-8 md:pt-16">
       <ClearCartOnSuccess />
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-accent">
+      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-leaf">
         Payment received
       </p>
       <h1 className="mt-3 font-display text-4xl font-semibold text-ink md:text-5xl">

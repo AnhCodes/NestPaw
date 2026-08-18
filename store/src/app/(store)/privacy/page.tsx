@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-3xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <p className="text-xs uppercase tracking-[0.22em] text-leaf">Legal</p>
       <h1 className="mt-3 font-display text-4xl text-ink md:text-6xl">
         Privacy policy

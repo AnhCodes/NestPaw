@@ -21,14 +21,14 @@ export default function CartPage() {
 
   if (!hydrated) {
     return (
-      <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pt-32">
+      <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pt-16">
         <p className="text-ink/60">Loading cart…</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-32">
+    <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <h1 className="font-display text-4xl text-ink md:text-6xl">Your cart</h1>
 
       {lines.length === 0 ? (
@@ -36,7 +36,7 @@ export default function CartPage() {
           <p className="text-ink/70">Your cart is empty.</p>
           <Link
             href="/shop"
-            className="mt-6 inline-flex rounded-xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+            className="mt-6 inline-flex rounded-2xl bg-moss px-6 py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
           >
             Continue shopping
           </Link>
@@ -72,7 +72,7 @@ export default function CartPage() {
                     <label className="text-xs uppercase tracking-wider text-ink/50">
                       Qty
                       <select
-                        className="ml-2 rounded-lg border border-moss/20 bg-white/70 px-2 py-1 text-sm text-ink"
+                        className="ml-2 rounded-lg border border-moss/20 bg-canvas px-2 py-1 text-sm text-ink"
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(product.id, Number(e.target.value))
@@ -124,7 +124,7 @@ export default function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="mt-6 flex w-full items-center justify-center rounded-xl bg-moss py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+              className="mt-6 flex w-full items-center justify-center rounded-2xl bg-moss py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
             >
               Checkout
             </Link>
