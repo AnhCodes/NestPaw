@@ -49,13 +49,19 @@ export default async function ProductPage({ params }: { params: Params }) {
     <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         <div className="space-y-3">
-          <div className="relative aspect-[2/3] overflow-hidden rounded-3xl bg-matte">
+          <div className="relative aspect-square overflow-hidden rounded-3xl bg-canvas sm:aspect-[4/5]">
             <Image
               src={product.image}
               alt={product.name}
               fill
               priority
-              className="object-cover"
+              className={`object-cover ${
+                product.slug === "forage-snuffle-mat"
+                  ? "object-[center_78%]"
+                  : product.slug === "quiet-nail-grinder"
+                    ? "object-[center_42%]"
+                    : "object-center"
+              }`}
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
             <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-4 md:top-4">
@@ -67,7 +73,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               {product.gallery.slice(1).map((src) => (
                 <div
                   key={src}
-                  className="relative aspect-[2/3] overflow-hidden rounded-3xl bg-matte"
+                  className="relative aspect-square overflow-hidden rounded-3xl bg-canvas"
                 >
                   <Image
                     src={src}
@@ -224,7 +230,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           <h2 className="font-display text-3xl font-semibold text-ink">
             You may also like
           </h2>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+          <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-10">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

@@ -46,9 +46,13 @@ export function ShopPageLoading() {
         <Bone className="mt-4 h-12 w-64 md:h-16 md:w-80" />
         <Bone className="mt-4 h-12 w-full max-w-md" />
       </div>
-      <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+      <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-8 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-10">
         {Array.from({ length: 6 }, (_, i) => (
-          <Bone key={i} className="aspect-[2/3] rounded-2xl" />
+          <div key={i}>
+            <Bone className="aspect-square rounded-2xl" />
+            <Bone className="mt-3 h-4 w-3/4" />
+            <Bone className="mt-2 h-3 w-1/3" />
+          </div>
         ))}
       </div>
     </div>
@@ -60,7 +64,7 @@ export function ProductPageLoading() {
     <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16" aria-busy="true">
       <Status label="Loading product" />
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-        <Bone className="aspect-[2/3] rounded-2xl" />
+        <Bone className="aspect-square rounded-2xl sm:aspect-[4/5]" />
         <div>
           <Bone className="h-3 w-24" />
           <Bone className="mt-4 h-12 w-3/4 md:h-14" />
