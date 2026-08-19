@@ -31,7 +31,7 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(8,14,12,0.72)_0%,rgba(8,14,12,0.35)_45%,rgba(8,14,12,0.55)_100%)]" />
         <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4.75rem)] max-w-7xl flex-col justify-end px-5 pb-14 pt-8 md:px-8 md:pb-20">
-          <p className="animate-fade font-brand text-[clamp(3.5rem,12vw,8.5rem)] font-bold leading-[0.9] text-mist">
+          <p className="animate-fade font-display text-[clamp(3.5rem,12vw,8.5rem)] font-semibold leading-[0.9] text-mist">
             NestPaw
           </p>
           <div className="mt-8 md:mt-10">
@@ -93,11 +93,14 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-10">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {heroFeature ? <ProductCard product={heroFeature} /> : null}
           {sideFeatures.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {products
             .filter((p) => !featured.slice(0, 3).some((f) => f.id === p.id))
             .slice(0, 3)

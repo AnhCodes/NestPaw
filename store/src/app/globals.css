@@ -36,7 +36,6 @@
   --color-line: var(--line);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
-  --font-brand: var(--font-brand);
 }
 
 @keyframes rise {
@@ -99,12 +98,6 @@ body {
   color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif;
   letter-spacing: 0;
-}
-
-.font-brand {
-  font-family: var(--font-brand), system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.05em;
 }
 
 .font-display {

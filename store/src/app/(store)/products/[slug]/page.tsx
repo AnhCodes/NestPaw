@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/product-image";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductCard } from "@/components/product-card";
@@ -49,32 +49,25 @@ export default async function ProductPage({ params }: { params: Params }) {
     <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 md:px-8 md:pb-28 md:pt-16">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         <div className="space-y-3">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-matte">
-            <Image
+          <div className="relative aspect-[2/3] overflow-hidden rounded-3xl bg-matte">
+            <ProductImage
               src={product.image}
               alt={product.name}
-              fill
               priority
-              className="object-contain p-6 md:p-8"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="(max-width: 1023px) 100vw, 50vw"
             />
-            <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-4 md:top-4">
-              <StockStatus product={product} tone="badge" />
-            </div>
           </div>
           {product.gallery.length > 1 ? (
             <div className="grid grid-cols-2 gap-4">
               {product.gallery.slice(1).map((src) => (
                 <div
                   key={src}
-                  className="relative aspect-square overflow-hidden rounded-3xl bg-matte"
+                  className="relative aspect-[2/3] overflow-hidden rounded-3xl bg-matte"
                 >
-                  <Image
+                  <ProductImage
                     src={src}
                     alt=""
-                    fill
-                    className="object-contain p-4"
-                    sizes="(max-width: 1024px) 45vw, 25vw"
+                    sizes="(max-width: 1023px) 45vw, 25vw"
                   />
                 </div>
               ))}
@@ -105,10 +98,6 @@ export default async function ProductPage({ params }: { params: Params }) {
           </div>
           <p className="mt-6 text-base leading-relaxed text-ink-soft">
             {product.description}
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-ink/55">
-            Photos show the same product style you&apos;ll receive. Color may
-            vary from what&apos;s pictured depending on available stock.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -198,15 +187,6 @@ export default async function ProductPage({ params }: { params: Params }) {
               </div>
               <div>
                 <p className="font-semibold text-ink">
-                  Will my item match the photo exactly?
-                </p>
-                <p className="mt-1">
-                  Yes in style and function. It&apos;s the same product. Color
-                  may differ from the photos based on available stock.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-ink">
                   Does this treat medical anxiety?
                 </p>
                 <p className="mt-1">
@@ -224,7 +204,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           <h2 className="font-display text-3xl font-semibold text-ink">
             You may also like
           </h2>
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-10">
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

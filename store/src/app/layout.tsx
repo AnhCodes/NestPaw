@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
-import { Fraunces, Nunito_Sans, Syne } from "next/font/google";
+import { Fraunces, Nunito_Sans } from "next/font/google";
 import { getSiteUrl, siteDescription, siteName } from "@/lib/site";
 import "./globals.css";
 
-/** Logo + hero wordmark — matches the IG lockup. */
-const brand = Syne({
-  variable: "--font-brand",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-});
-
-/** Headlines — soft serif, home/gift rather than tech. */
+/** Logo + headlines — same face as “Calm comfort for dogs at home”. */
 const display = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
@@ -61,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${brand.variable} ${display.variable} ${body.variable} h-full`}
+      className={`${display.variable} ${body.variable} h-full`}
     >
       <body className="flex min-h-full flex-col antialiased">
         {children}

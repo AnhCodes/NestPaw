@@ -38,12 +38,8 @@ export const products: Product[] = [
     price: 29,
     stock: 0,
     category: "groom",
-    image: "/products/nestpaw-shedding-brush-kit-fill-v3.png",
-    gallery: [
-      "/products/nestpaw-shedding-brush-kit-fill-v3.png",
-      "/products/nestpaw-shedding-brush-gallery-v2.png",
-      "/products/nestpaw-shedding-glove-gallery-v4.png",
-    ],
+    image: "/products/nestpaw-shedding-brush-kit-v4.jpg",
+    gallery: ["/products/nestpaw-shedding-brush-kit-v4.jpg"],
     benefits: [
       "Cuts down loose fur before it hits furniture",
       "Gentle enough for weekly home use",
@@ -56,7 +52,6 @@ export const products: Product[] = [
     ],
     shippingNote: "Ships within 24 hours · typically arrives in 5 to 8 business days",
     featured: true,
-    badge: "Best seller",
   },
   {
     id: "snuffle-mat",
@@ -69,10 +64,8 @@ export const products: Product[] = [
     price: 44,
     stock: 0,
     category: "calm",
-    image: "/products/nestpaw-forage-snuffle-mat-hero.png",
-    gallery: [
-      "/products/nestpaw-forage-snuffle-mat-hero.png",
-    ],
+    image: "/products/nestpaw-forage-snuffle-mat.jpg",
+    gallery: ["/products/nestpaw-forage-snuffle-mat.jpg"],
     benefits: [
       "Encourages slower, focused foraging",
       "Machine-washable fleece construction",
@@ -95,10 +88,8 @@ export const products: Product[] = [
     price: 29,
     stock: 0,
     category: "calm",
-    image: "/products/nestpaw-slow-feeder-mat-fill.png",
-    gallery: [
-      "/products/nestpaw-slow-feeder-mat-fill.png",
-    ],
+    image: "/products/nestpaw-slow-feeder-mat-v2.jpg",
+    gallery: ["/products/nestpaw-slow-feeder-mat-v2.jpg"],
     benefits: [
       "Star-ridge slow bowl slows rapid eating",
       "Integrated lick textures for wet food or spreadables",
@@ -121,10 +112,8 @@ export const products: Product[] = [
     price: 29,
     stock: 0,
     category: "groom",
-    image: "/products/nestpaw-quiet-nail-grinder-fill.png",
-    gallery: [
-      "/products/nestpaw-quiet-nail-grinder-fill.png",
-    ],
+    image: "/products/nestpaw-quiet-nail-grinder.jpg",
+    gallery: ["/products/nestpaw-quiet-nail-grinder.jpg"],
     benefits: [
       "Gradual grinding instead of abrupt clipping",
       "USB-friendly for small-space living",
@@ -148,8 +137,8 @@ export const products: Product[] = [
     price: 14,
     stock: 0,
     category: "calm",
-    image: "/products/nestpaw-lick-mat-fill.png",
-    gallery: ["/products/nestpaw-lick-mat-fill.png"],
+    image: "/products/nestpaw-lick-mat.jpg",
+    gallery: ["/products/nestpaw-lick-mat.jpg"],
     benefits: [
       "Turns spreadable treats into a longer-lasting calm activity",
       "Suction backing helps keep the mat in place on smooth surfaces",

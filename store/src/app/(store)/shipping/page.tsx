@@ -32,15 +32,6 @@ export default function ShippingPage() {
       </section>
 
       <section className="mt-10 space-y-4 text-ink/75">
-        <h2 className="font-display text-2xl text-ink">Product photos &amp; colors</h2>
-        <p>
-          Product photos show the same item style you&apos;ll receive. Colors
-          may vary from what&apos;s pictured depending on available stock. If a
-          specific color matters to you, contact us before ordering.
-        </p>
-      </section>
-
-      <section className="mt-10 space-y-4 text-ink/75">
         <h2 className="font-display text-2xl text-ink">Returns</h2>
         <p>
           We offer a 30-day return window for unused items in original condition,
