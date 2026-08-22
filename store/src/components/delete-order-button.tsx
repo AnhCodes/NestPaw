@@ -11,7 +11,7 @@ export function DeleteOrderButton({
     <form
       action={`/api/admin/orders/${orderId}`}
       method="post"
-      className="relative z-10"
+      className="relative z-10 inline-flex"
       onSubmit={(event) => {
         if (
           !window.confirm(
@@ -24,10 +24,7 @@ export function DeleteOrderButton({
     >
       <input type="hidden" name="intent" value="delete" />
       <input type="hidden" name="redirectTo" value={redirectTo} />
-      <button
-        type="submit"
-        className="rounded-md px-2 py-1.5 text-xs font-medium text-[color:var(--admin-danger-fg)] hover:underline"
-      >
+      <button type="submit" className="btn-danger-ghost">
         Delete
       </button>
     </form>

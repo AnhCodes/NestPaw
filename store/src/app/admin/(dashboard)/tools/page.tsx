@@ -162,6 +162,19 @@ export default async function AdminToolsPage() {
           </div>
         </section>
       </div>
+
+      <section id="shipping-email" className="mt-10">
+        <h2 className="text-sm font-semibold">Shipping email</h2>
+        <p className="mt-1 text-sm text-[color:var(--admin-muted)]">
+          Sent automatically when you mark an order shipped with tracking.
+        </p>
+        <a
+          href="/admin/tools/shipping-email"
+          className="mt-3 inline-block text-sm font-medium text-[color:var(--admin-accent)] hover:underline"
+        >
+          Preview template
+        </a>
+      </section>
     </div>
   );
 }

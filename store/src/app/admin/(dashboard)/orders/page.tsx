@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/products";
 import { listOrdersWithItems } from "@/lib/orders";
 import type { FulfillmentStatus, OrderItem } from "@/lib/db/schema";
+import { AdminBadge, returnTone } from "@/components/admin-badge";
 import { DeleteOrderButton } from "@/components/delete-order-button";
 import { EditCustomerButton } from "@/components/edit-customer-button";
 import { ShipOrderButton } from "@/components/ship-order-button";
@@ -51,17 +52,17 @@ const columns: {
   {
     status: "unfulfilled",
     title: "To pack",
-    hint: "Paid and waiting to be boxed.",
+    hint: "Paid, waiting to box.",
   },
   {
     status: "packed",
     title: "Packed",
-    hint: "Ready for a label and drop-off.",
+    hint: "Ready for a label.",
   },
   {
     status: "shipped",
     title: "Shipped",
-    hint: "Tracking emailed when you marked shipped.",
+    hint: "Tracking emailed.",
   },
 ];
 
@@ -78,24 +79,28 @@ function customerErrorMessage(value: string | undefined) {
   }
 }
 
-function addressSummary(address: Record<string, string>, name?: string | null) {
-  const parts = [
-    name,
-    address.line1,
-    address.city,
-    address.state,
-    address.postal_code,
-  ].filter(Boolean);
+function formatOrderDate(value: Date) {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(value.getFullYear() === now.getFullYear() ? {} : { year: "numeric" }),
+  }).format(value);
+}
+
+function locationSummary(address: Record<string, string>) {
+  const parts = [address.city, address.state].filter(Boolean);
   return parts.length > 0 ? parts.join(", ") : null;
 }
 
 function itemSummary(items: OrderItem[]) {
   if (items.length === 0) return "No items";
-  return items
-    .map((item) =>
-      item.quantity > 1 ? `${item.name} × ${item.quantity}` : item.name,
-    )
-    .join(", ");
+  const first = items[0];
+  const label =
+    first.quantity > 1 ? `${first.name} × ${first.quantity}` : first.name;
+  if (items.length === 1) return label;
+  const extra = items.length - 1;
+  return `${label} + ${extra} more`;
 }
 
 export default async function AdminOrdersPage({
@@ -177,52 +182,70 @@ export default async function AdminOrdersPage({
                       string,
                       string
                     >;
-                    const shipTo = addressSummary(
-                      address,
-                      order.shippingName || customer.name,
-                    );
+                    const displayName = (
+                      order.shippingName ||
+                      customer.name ||
+                      ""
+                    ).trim();
+                    const title = displayName || customer.email;
+                    const location = locationSummary(address);
+                    const dateLabel = order.createdAt
+                      ? formatOrderDate(new Date(order.createdAt))
+                      : null;
+                    const meta = [
+                      location,
+                      dateLabel,
+                      column.status === "shipped"
+                        ? order.trackingNumber
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
 
                     return (
                       <article
                         key={order.id}
-                        className="relative rounded-xl border border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] p-4"
+                        className="relative rounded-xl border border-[color:var(--admin-border)] bg-[var(--admin-surface-soft)] p-3.5"
                       >
                         <Link
                           href={`/admin/orders/${order.id}`}
                           className="admin-row-link"
                           aria-label={`Open order for ${customer.email}`}
                         />
-                        <p className="font-medium">{customer.email}</p>
-                        <p className="mt-1 text-xs text-[color:var(--admin-subtle)]">
-                          {order.createdAt
-                            ? new Date(order.createdAt).toLocaleDateString()
-                            : "—"}
-                          {" · "}
-                          {formatCents(order.amountTotal)}
-                        </p>
-                        <p className="mt-2 text-sm text-[color:var(--admin-muted)]">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 truncate font-medium">
+                            {title}
+                          </p>
+                          <p className="shrink-0 text-sm font-medium tabular-nums">
+                            {formatCents(order.amountTotal)}
+                          </p>
+                        </div>
+                        {displayName ? (
+                          <p className="mt-0.5 truncate text-xs text-[color:var(--admin-subtle)]">
+                            {customer.email}
+                          </p>
+                        ) : null}
+                        <p className="mt-1 truncate text-sm text-[color:var(--admin-muted)]">
                           {itemSummary(items)}
                         </p>
-                        {shipTo ? (
-                          <p className="mt-2 text-xs text-[color:var(--admin-subtle)]">
-                            {shipTo}
+                        {meta ? (
+                          <p className="mt-1 truncate text-xs text-[color:var(--admin-subtle)]">
+                            {meta}
                           </p>
                         ) : null}
                         {order.returnStatus !== "none" ? (
-                          <p className="mt-2 text-xs capitalize text-[color:var(--admin-warning-fg)]">
-                            Return: {order.returnStatus}
-                          </p>
+                          <div className="mt-2">
+                            <AdminBadge tone={returnTone(order.returnStatus)}>
+                              {order.returnStatus}
+                            </AdminBadge>
+                          </div>
                         ) : null}
-                        {column.status === "shipped" && order.trackingNumber ? (
-                          <p className="mt-2 font-mono text-xs text-[color:var(--admin-muted)]">
-                            {order.trackingNumber}
-                          </p>
-                        ) : null}
-                        <div className="relative z-10 mt-3 flex flex-wrap gap-2">
+                        <div className="relative z-10 mt-3 flex flex-wrap items-center gap-2">
                           {column.status === "unfulfilled" ? (
                             <form
                               action={`/api/admin/orders/${order.id}`}
                               method="post"
+                              className="inline-flex"
                             >
                               <input
                                 type="hidden"
@@ -249,7 +272,7 @@ export default async function AdminOrdersPage({
                                 name="redirectTo"
                                 value="/admin/orders"
                               />
-                              <button type="submit" className="btn-dark-ghost">
+                              <button type="submit" className="btn-primary">
                                 Mark packed
                               </button>
                             </form>

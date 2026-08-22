@@ -115,7 +115,7 @@ export function ShipOrderButton({
         className="relative z-10 btn-primary"
         onClick={() => setOpen(true)}
       >
-        Ship
+        Mark shipped
       </button>
       {modal}
     </>
