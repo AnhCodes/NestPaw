@@ -8,6 +8,7 @@ import {
   FREE_SHIPPING_THRESHOLD,
   formatPrice,
 } from "@/lib/products";
+import { startStripeCheckout } from "@/lib/start-checkout";
 
 export default function CheckoutPage() {
   const { lines, subtotal, hydrated, items } = useCart();
@@ -28,28 +29,18 @@ export default function CheckoutPage() {
     setError(null);
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            productId: i.productId,
-            quantity: i.quantity,
-          })),
-        }),
-      });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !data.url) {
-        setError(data.error || "Checkout failed. Please try again.");
-        setLoading(false);
-        return;
-      }
-      window.location.href = data.url;
-    } catch {
-      setError("Network error starting Stripe Checkout.");
+    const { url, error: checkoutError } = await startStripeCheckout(
+      items.map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+      })),
+    );
+    if (!url) {
+      setError(checkoutError || "Checkout failed. Please try again.");
       setLoading(false);
+      return;
     }
+    window.location.assign(url);
   }
 
   if (!hydrated) {

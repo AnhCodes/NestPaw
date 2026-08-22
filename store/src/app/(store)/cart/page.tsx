@@ -2,15 +2,38 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import {
   FLAT_SHIPPING,
   FREE_SHIPPING_THRESHOLD,
   formatPrice,
 } from "@/lib/products";
+import { startStripeCheckout } from "@/lib/start-checkout";
 
 export default function CartPage() {
-  const { lines, subtotal, setQuantity, removeItem, hydrated } = useCart();
+  const { lines, subtotal, setQuantity, removeItem, hydrated, items } =
+    useCart();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const allInStock = lines.every(({ product }) => product.stock > 0);
+
+  async function onCheckout() {
+    setError(null);
+    setLoading(true);
+    const { url, error: checkoutError } = await startStripeCheckout(
+      items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
+    );
+    if (!url) {
+      setError(checkoutError || "Checkout failed. Please try again.");
+      setLoading(false);
+      return;
+    }
+    window.location.assign(url);
+  }
   const shipping =
     subtotal === 0
       ? 0
@@ -123,12 +146,24 @@ export default function CartPage() {
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
-            <Link
-              href="/checkout"
-              className="mt-6 flex w-full items-center justify-center rounded-2xl bg-moss py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep"
+            {error ? (
+              <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {error}
+              </p>
+            ) : null}
+            {!allInStock ? (
+              <p className="mt-4 text-xs text-ink/50">
+                Remove out-of-stock items before paying.
+              </p>
+            ) : null}
+            <button
+              type="button"
+              onClick={onCheckout}
+              disabled={loading || !allInStock}
+              className="mt-6 flex w-full items-center justify-center rounded-2xl bg-moss py-3.5 text-sm font-medium text-mist transition hover:bg-moss-deep disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Checkout
-            </Link>
+              {loading ? "Redirecting to Stripe…" : "Checkout"}
+            </button>
           </aside>
         </div>
       )}

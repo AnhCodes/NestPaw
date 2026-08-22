@@ -162,11 +162,14 @@ export function getProductsByCategory(category: Category | "all") {
 }
 
 export function formatPrice(amount: number) {
+  const cents = Math.round(amount * 100);
+  const wholeDollars = cents % 100 === 0;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: 0,
-  }).format(amount);
+    minimumFractionDigits: wholeDollars ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
 }
 
 export function isInStock(product: Product) {
