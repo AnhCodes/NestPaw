@@ -166,9 +166,8 @@ export function AdminThemeShell({
       <div className="px-5 py-5">
         <NestPawLogo
           href="/admin"
-          className="text-[color:var(--admin-fg)]"
-          wordmarkClassName="text-[1.25rem] md:text-[1.35rem]"
-          markClassName="h-7 w-7 md:h-7 md:w-7"
+          variant={theme === "dark" ? "cream" : "teal"}
+          className="h-7 w-auto"
         />
         <p className="mt-2 text-[0.7rem] font-medium text-[color:var(--admin-subtle)]">
           Operations
@@ -233,9 +232,8 @@ export function AdminThemeShell({
           <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[color:var(--admin-border)] bg-[var(--admin-surface)] px-4 py-3 lg:hidden">
             <NestPawLogo
               href="/admin"
-              className="text-[color:var(--admin-fg)]"
-              wordmarkClassName="text-[1.2rem]"
-              markClassName="h-7 w-7"
+              variant={theme === "dark" ? "cream" : "teal"}
+              className="h-6 w-auto"
             />
             <button
               type="button"

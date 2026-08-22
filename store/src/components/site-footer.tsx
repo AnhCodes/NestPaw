@@ -6,11 +6,7 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-line bg-ink text-mist">
       <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 md:grid-cols-[1.3fr_1fr_1fr] md:px-8">
         <div>
-          <NestPawLogo
-            className="text-mist"
-            wordmarkClassName="text-4xl md:text-4xl"
-            markClassName="h-10 w-10 md:h-11 md:w-11"
-          />
+          <NestPawLogo variant="cream" className="h-9 w-auto md:h-10" />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-mist/65">
             Products that help your dog feel calm and comfortable, and make
             home life easier for you.

@@ -27,7 +27,7 @@ export function SiteHeader() {
   return (
     <header className="relative z-50 border-b border-line bg-canvas">
       <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between px-5 md:h-[4.75rem] md:px-8">
-        <NestPawLogo className="text-ink" />
+        <NestPawLogo priority className="h-7 w-auto md:h-8" />
 
         <nav className="hidden items-center gap-9 md:flex">
           {links.map((link) => (
